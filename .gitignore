@@ -8,3 +8,5 @@ build/
 .pub-cache/
 .pub/
 *.log
+android/
+ios/

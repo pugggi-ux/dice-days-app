@@ -189,8 +189,14 @@ let lastAction=null;
 let toastTimer=null;
 let snappedCardId=null;
 
+function flameSVG(sz){
+  const w=sz*0.6,h=sz*0.85;
+  const ox=(sz-w)/2,oy=(sz-h)/2;
+  return`<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" fill="none"><path d="M${ox+w*.5},${oy} C${ox+w*.5},${oy+h*.35} ${ox+w},${oy+h*.25} ${ox+w},${oy+h*.6} C${ox+w},${oy+h*.85} ${ox+w*.75},${oy+h} ${ox+w*.5},${oy+h} C${ox+w*.25},${oy+h} ${ox},${oy+h*.85} ${ox},${oy+h*.6} C${ox},${oy+h*.25} ${ox+w*.5},${oy+h*.35} ${ox+w*.5},${oy}" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
 function ssSVG(ratio,sz=36){
-  if(ratio>1)return`<span style="color:var(--success);font-size:${sz*.75}px;line-height:1">🔥</span>`;
+  if(ratio>1)return flameSVG(sz);
   const r=sz/2-2,c=sz/2,sw=3;
   const a=2*Math.PI*Math.min(ratio,1);
   const x=c+r*Math.sin(a),y=c-r*Math.cos(a);
@@ -201,7 +207,6 @@ function ssSVG(ratio,sz=36){
 
 function bn(g){const b=[];if(!g.explainers.length)b.push('Kein Erklärer');if(!g.suppliers.length)b.push('Kein Lieferant');return b;}
 
-// ===== GAME LIST =====
 function renderFilters(){
   document.getElementById('filters').innerHTML=
     ['all','mine','bottleneck'].map((f,i)=>{
@@ -221,13 +226,11 @@ function renderList(){
     const bns=bn(g);
     const bnText=bns.length?`<div class="game-bottleneck">${bns.join(' · ')}</div>`:'';
     let badges='';
-    // Interessenten badge: green only if I'm interested, otherwise neutral grey
     const intCount=g.interested.length;
     if(intCount>0){
       const meIn=g.interested.includes(ME);
       badges+=`<span class="badge ${meIn?'badge-int-me':'badge-neutral'}">${intCount} Interessenten</span>`;
     }
-    // Erklärer badge: yellow only if I'm the explainer, otherwise neutral grey
     g.explainers.forEach(e=>{
       const isMe=e===ME;
       const label=isMe?'Du erklärst':pName(e)+' erklärt';
@@ -242,7 +245,6 @@ function renderList(){
   }).join('');
 }
 
-// ===== DETAIL =====
 let detailGameId=null;
 function openDetail(id){
   detailGameId=id;
@@ -370,7 +372,6 @@ function togglePicker(pid){
 }
 function closePicker(){document.getElementById('picker').classList.remove('show');}
 
-// ===== INBOX =====
 const SNAP_THRESHOLD=70;
 const FLY_THRESHOLD=160;
 const WAGON_W=90;

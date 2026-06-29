@@ -1,18 +1,280 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <base href="/dice-days-app/">
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Dice Days - Board game event organizer">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Dice Days">
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <title>Dice Days</title>
-  <link rel="manifest" href="manifest.json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dice Days">
+<title>Dice Days</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--tan:#B8A082;--bg:#121212;--surface:#1E1E1E;--card:#2A2A2A;--text:#FFFFFF;--text2:#AAAAAA;--success:#4CAF50;--yellow:#FFC107;--danger:#EF5350;--safe-top:env(safe-area-inset-top,20px);--safe-bot:env(safe-area-inset-bottom,0px)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100dvh;display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+.screen.active{display:flex}
+/* App Bar */
+.app-bar{padding:12px 16px;padding-top:calc(var(--safe-top) + 8px);background:var(--surface);display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.app-bar h1{font-size:18px;font-weight:700}
+.event-code{background:rgba(184,160,130,0.15);color:var(--tan);font-weight:700;font-size:13px;padding:4px 10px;border-radius:12px}
+/* Filter Tabs */
+.filters{display:flex;gap:8px;padding:8px 16px}
+.filter-chip{padding:6px 14px;border-radius:16px;font-size:13px;font-weight:600;border:1px solid #DDD;color:var(--text2);cursor:pointer}
+.filter-chip.active{background:var(--tan);color:#fff;border-color:var(--tan)}
+/* Game List */
+.game-list{flex:1;overflow-y:auto;padding:8px 16px 100px;-webkit-overflow-scrolling:touch}
+.game-card{background:var(--card);border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;display:flex;align-items:stretch}
+.game-cover{width:72px;min-height:72px;background-size:cover;background-position:center;flex-shrink:0}
+.game-info{padding:10px 12px;flex:1;min-width:0}
+.game-name{font-size:15px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-meta{font-size:12px;color:var(--text2);margin-bottom:4px}
+.game-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+.badge-bottleneck{background:rgba(239,83,80,0.15);color:var(--danger)}
+.badge-interest{background:rgba(184,160,130,0.15);color:var(--tan)}
+.badge-explain{background:rgba(255,193,7,0.15);color:var(--yellow)}
+/* Sweet Spot */
+.sweet-spot{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:auto 12px auto 0}
+/* Bottom Nav */
+.bottom-nav{background:var(--surface);display:flex;border-top:1px solid #333;padding-bottom:var(--safe-bot)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0;cursor:pointer;color:var(--text2);font-size:11px;gap:2px}
+.nav-item.active{color:var(--tan)}
+.nav-item .icon{font-size:22px}
+/* Detail Screen */
+.detail-header{position:relative;height:200px;background-size:cover;background-position:center}
+.detail-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,var(--bg))}
+.detail-content{flex:1;overflow-y:auto;padding:0 16px 100px;-webkit-overflow-scrolling:touch}
+.detail-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.detail-meta{color:var(--text2);font-size:13px;margin-bottom:16px}
+.role-section{margin-bottom:16px}
+.role-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.role-title{font-size:14px;font-weight:700}
+.role-add{width:28px;height:28px;border-radius:50%;border:2px solid var(--tan);color:var(--tan);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;background:none}
+.role-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:13px;font-weight:500}
+.chip-explainer{background:rgba(255,193,7,0.15);color:var(--yellow)}
+.chip-supplier{background:rgba(76,175,80,0.15);color:var(--success)}
+.chip-interest{background:rgba(184,160,130,0.15);color:var(--tan)}
+.chip-need{font-size:10px;color:var(--yellow)}
+.action-bar{position:fixed;bottom:60px;left:0;right:0;padding:12px 16px;padding-bottom:calc(12px + var(--safe-bot));display:flex;gap:10px;background:var(--bg)}
+.action-btn{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;text-align:center}
+.btn-interest{background:var(--tan);color:#fff}
+.btn-interest.active{background:rgba(184,160,130,0.15);color:var(--tan);border:2px solid var(--tan)}
+.btn-explain{background:var(--yellow);color:#000}
+.btn-back{position:absolute;top:calc(var(--safe-top) + 8px);left:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.5);color:#fff;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+/* Inbox */
+.inbox-list{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.inbox-card-wrap{position:relative;margin-bottom:12px;overflow:hidden;border-radius:12px}
+.inbox-bg{position:absolute;top:0;bottom:0;display:flex;align-items:center;padding:0 20px;font-size:13px;font-weight:700;width:100%}
+.inbox-bg-right{left:0;background:var(--success);color:#fff;justify-content:flex-start}
+.inbox-bg-left{right:0;background:var(--danger);color:#fff;justify-content:flex-end}
+.inbox-card{position:relative;background:var(--card);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;transition:transform 0.2s;z-index:1}
+.inbox-card img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+.inbox-card-info{flex:1}
+.inbox-card-name{font-weight:700;font-size:15px}
+.inbox-card-meta{font-size:12px;color:var(--text2)}
+.toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:100;display:none;white-space:nowrap}
+.toast.show{display:block}
+.empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:15px;text-align:center;padding:40px}
+</style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+
+<!-- GAME LIST SCREEN -->
+<div id="screen-list" class="screen active">
+  <div class="app-bar">
+    <h1>Dice Days 12</h1>
+    <span class="event-code">ABC123</span>
+  </div>
+  <div class="filters">
+    <div class="filter-chip active" data-filter="all">Alle</div>
+    <div class="filter-chip" data-filter="mine">Meine</div>
+    <div class="filter-chip" data-filter="bottleneck">Engpass</div>
+  </div>
+  <div class="game-list" id="game-list"></div>
+</div>
+
+<!-- DETAIL SCREEN -->
+<div id="screen-detail" class="screen">
+  <div class="detail-header" id="detail-header">
+    <button class="btn-back" onclick="showScreen('list')">&#8249;</button>
+  </div>
+  <div class="detail-content" id="detail-content"></div>
+  <div class="action-bar" id="detail-actions"></div>
+</div>
+
+<!-- INBOX SCREEN -->
+<div id="screen-inbox" class="screen">
+  <div class="app-bar"><h1>Inbox</h1></div>
+  <div class="inbox-list" id="inbox-list"></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" data-screen="list" onclick="switchTab(this,'list')">
+    <span class="icon">&#9776;</span>Spiele
+  </div>
+  <div class="nav-item" data-screen="inbox" onclick="switchTab(this,'inbox')">
+    <span class="icon">&#9993;</span>Inbox
+  </div>
+</div>
+
+<script>
+const ME='p-me';
+const games=[
+  {id:'g1',name:'Wingspan',img:'https://cf.geekdo-images.com/yLZJCVLlIx4c7eJEWUNJ7w__thumb/img/VNToqgS2-pOGU6MuvIkMPKn_y-s=/fit-in/200x150/filters:strip_icc()/pic4458123.jpg',min:1,max:5,time:70,weight:2.5,interested:['p-me','p2','p3','p4'],explainers:['p2'],suppliers:['p-me'],needsExplain:['p-me'],status:'unplanned'},
+  {id:'g2',name:'Brass: Birmingham',img:'https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__thumb/img/-BIOKV4JAdtk1PBXNjc9bfcJJJQ=/fit-in/200x150/filters:strip_icc()/pic3490053.jpg',min:2,max:4,time:120,weight:3.9,interested:['p-me','p2','p3','p4','p5'],explainers:[],suppliers:['p3'],needsExplain:['p-me','p5'],status:'unplanned'},
+  {id:'g3',name:'Cascadia',img:'https://cf.geekdo-images.com/MjeijZYjy4S-2GnjICKVpg__thumb/img/pOHUQ-hbWnMkFhrcJNwVXRiI_5s=/fit-in/200x150/filters:strip_icc()/pic5100691.jpg',min:1,max:4,time:45,weight:1.8,interested:['p-me','p2'],explainers:['p-me'],suppliers:['p2'],needsExplain:[],status:'unplanned'},
+  {id:'g4',name:'Terraforming Mars',img:'https://cf.geekdo-images.com/wg9oOLcsKvDesSUdZQ4rxw__thumb/img/BTxqxgYay5tHJfVP6GKBJ0MzxGs=/fit-in/200x150/filters:strip_icc()/pic3536616.jpg',min:1,max:5,time:120,weight:3.2,interested:['p2','p3'],explainers:['p3'],suppliers:['p3'],needsExplain:[],status:'unplanned'},
+  {id:'g5',name:'Azul',img:'https://cf.geekdo-images.com/aPSHJO0d0XOpQR5X-wJonw__thumb/img/6oRUfQzFLNR8LMnFZ9LbOSnPjpM=/fit-in/200x150/filters:strip_icc()/pic3718275.jpg',min:2,max:4,time:30,weight:1.8,interested:['p-me'],explainers:['p-me'],suppliers:[],needsExplain:[],status:'unplanned'},
+  {id:'g6',name:'Spirit Island',img:'https://cf.geekdo-images.com/kjCm4ZvPjIZxS-mYgSPOgg__thumb/img/1jHBlBLIPMBbNzYFpCx0dZQbqJk=/fit-in/200x150/filters:strip_icc()/pic3615739.jpg',min:1,max:4,time:120,weight:4.0,interested:['p2','p3','p4'],explainers:['p4'],suppliers:['p4'],needsExplain:[],status:'unplanned'}
+];
+const names={'p-me':'Ich','p2':'Anna','p3':'Ben','p4':'Clara','p5':'David','p6':'Eva'};
+let currentFilter='all';
+let hiddenInbox={};
+
+function sweetSpotSVG(ratio,sz=36){
+  if(ratio>1)return `<span style="color:var(--success);font-size:${sz*0.7}px">🔥</span>`;
+  const r=sz/2-2,c=sz/2,stroke=3;
+  const ang=2*Math.PI*Math.min(ratio,1);
+  const x=c+r*Math.sin(ang),y=c-r*Math.cos(ang);
+  const lg=ratio>0.5?1:0;
+  const path=ratio>=1?`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--success)" stroke-width="${stroke}"/>`
+    :ratio>0?`<path d="M${c},${c-r} A${r},${r} 0 ${lg} 1 ${x.toFixed(2)},${y.toFixed(2)}" fill="none" stroke="var(--success)" stroke-width="${stroke}" stroke-linecap="round"/>`:'';
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#E0E0E0" stroke-width="${stroke}"/>${path}</svg>`;
+}
+
+function bottleneck(g){
+  const b=[];
+  if(!g.explainers.length)b.push('Erklärer fehlt');
+  if(!g.suppliers.length)b.push('Lieferant fehlt');
+  return b;
+}
+
+function renderList(){
+  const el=document.getElementById('game-list');
+  let filtered=games;
+  if(currentFilter==='mine')filtered=games.filter(g=>g.interested.includes(ME));
+  if(currentFilter==='bottleneck')filtered=games.filter(g=>bottleneck(g).length>0);
+  el.innerHTML=filtered.map(g=>{
+    const ratio=g.interested.length/g.max;
+    const bn=bottleneck(g);
+    const badges=bn.map(b=>`<span class="badge badge-bottleneck">${b}</span>`).join('')
+      +(g.interested.includes(ME)?'<span class="badge badge-interest">Interessiert</span>':'')
+      +(g.needsExplain.includes(ME)?'<span class="badge badge-explain">Erklärbedarf</span>':'');
+    return `<div class="game-card" onclick="openDetail('${g.id}')">
+      <div class="game-cover" style="background-image:url('${g.img}')"></div>
+      <div class="game-info">
+        <div class="game-name">${g.name}</div>
+        <div class="game-meta">${g.min}-${g.max} Spieler · ${g.time} Min · ${g.weight}</div>
+        <div class="game-badges">${badges}</div>
+      </div>
+      <div class="sweet-spot">${sweetSpotSVG(ratio)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  document.getElementById('detail-header').style.backgroundImage=`url('${g.img}')`;
+  const ratio=g.interested.length/g.max;
+  const intList=g.interested.map(p=>{
+    const ne=g.needsExplain.includes(p)?'<span class="chip-need"> ⚡ Erklärbedarf</span>':'';
+    return `<span class="chip chip-interest">${names[p]||p}${ne}</span>`;
+  }).join('');
+  const expList=g.explainers.map(p=>`<span class="chip chip-explainer">${names[p]||p}</span>`).join('')||'<span style="color:var(--danger);font-size:13px">Fehlt!</span>';
+  const supList=g.suppliers.map(p=>`<span class="chip chip-supplier">${names[p]||p}</span>`).join('')||'<span style="color:var(--danger);font-size:13px">Fehlt!</span>';
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-title">${g.name} ${sweetSpotSVG(ratio,28)}</div>
+    <div class="detail-meta">${g.min}-${g.max} Spieler · ${g.time} Min · Gewicht ${g.weight}</div>
+    <div class="role-section"><div class="role-header"><span class="role-title">Interessenten (${g.interested.length})</span></div><div class="role-chips">${intList}</div></div>
+    <div class="role-section"><div class="role-header"><span class="role-title">Erklärer</span><div class="role-add" onclick="toggleRole('${g.id}','explainers')">+</div></div><div class="role-chips">${expList}</div></div>
+    <div class="role-section"><div class="role-header"><span class="role-title">Lieferant</span><div class="role-add" onclick="toggleRole('${g.id}','suppliers')">+</div></div><div class="role-chips">${supList}</div></div>`;
+  const isInt=g.interested.includes(ME);
+  document.getElementById('detail-actions').innerHTML=`
+    <button class="action-btn btn-interest${isInt?' active':''}" onclick="toggleInterest('${g.id}')">${isInt?'✓ Interessiert':'Interesse'}</button>
+    <button class="action-btn btn-explain" onclick="toggleRole('${g.id}','explainers')">Erklären</button>`;
+  showScreen('detail');
+}
+
+function toggleInterest(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  const i=g.interested.indexOf(ME);
+  if(i>=0){g.interested.splice(i,1);g.needsExplain=g.needsExplain.filter(p=>p!==ME)}
+  else g.interested.push(ME);
+  openDetail(id);renderList();
+}
+
+function toggleRole(id,role){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  const i=g[role].indexOf(ME);
+  if(i>=0)g[role].splice(i,1);else g[role].push(ME);
+  openDetail(id);renderList();
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+function switchTab(el,screen){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  showScreen(screen);
+  if(screen==='inbox')renderInbox();
+}
+
+function renderInbox(){
+  const list=games.filter(g=>!g.interested.includes(ME)&&!hiddenInbox[g.id]);
+  const el=document.getElementById('inbox-list');
+  if(!list.length){el.innerHTML='<div class="empty-state">Alles erledigt! 🎉</div>';return;}
+  el.innerHTML=list.map(g=>`
+    <div class="inbox-card-wrap" id="inbox-${g.id}">
+      <div class="inbox-bg inbox-bg-right">✓ Interesse</div>
+      <div class="inbox-bg inbox-bg-left">Ausblenden</div>
+      <div class="inbox-card" ontouchstart="iStart(event,'${g.id}')" ontouchmove="iMove(event,'${g.id}')" ontouchend="iEnd(event,'${g.id}')">
+        <img src="${g.img}" alt="${g.name}">
+        <div class="inbox-card-info">
+          <div class="inbox-card-name">${g.name}</div>
+          <div class="inbox-card-meta">${g.min}-${g.max} Spieler · ${g.time} Min</div>
+        </div>
+        <div>${sweetSpotSVG(g.interested.length/g.max,32)}</div>
+      </div>
+    </div>`).join('');
+}
+
+let touchX=0;
+function iStart(e,id){touchX=e.touches[0].clientX}
+function iMove(e,id){
+  const dx=e.touches[0].clientX-touchX;
+  const card=document.querySelector(`#inbox-${id} .inbox-card`);
+  card.style.transform=`translateX(${dx}px)`;
+  card.style.transition='none';
+}
+function iEnd(e,id){
+  const card=document.querySelector(`#inbox-${id} .inbox-card`);
+  const dx=parseInt(card.style.transform.replace(/[^-\d]/g,''))||0;
+  card.style.transition='transform 0.3s';
+  if(dx>100){
+    card.style.transform='translateX(100%)';
+    setTimeout(()=>{const g=games.find(x=>x.id===id);if(g){g.interested.push(ME);renderList();renderInbox();showToast(`${g.name} — Interesse hinzugefügt`)}},300);
+  }else if(dx<-100){
+    card.style.transform='translateX(-100%)';
+    setTimeout(()=>{hiddenInbox[id]=true;renderInbox();const g=games.find(x=>x.id===id);showToast(`${g.name} ausgeblendet`)},300);
+  }else{card.style.transform='translateX(0)'}
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+document.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click',function(){
+  document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+  currentFilter=this.dataset.filter;
+  renderList();
+}));
+
+renderList();
+</script>
 </body>
 </html>

@@ -24,9 +24,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .filter-chip.active{background:var(--tan);color:#fff;border-color:var(--tan)}
 
 .game-list{flex:1;overflow-y:auto;padding:8px 12px 90px;-webkit-overflow-scrolling:touch}
-.game-card{background:var(--card);border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;display:flex;align-items:stretch}
-.game-cover{width:72px;min-height:80px;background-size:cover;background-position:center;flex-shrink:0}
-.game-body{padding:8px 0 8px 10px;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+
+/* Shared swipeable card wrapper */
+.swipe-wrap{position:relative;margin-bottom:10px;overflow:visible}
+.wagon{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border-radius:12px;color:#fff;z-index:0}
+.wagon-hide{right:0;width:100%;background:var(--danger);justify-content:flex-end;padding-right:20px}
+.wagon-interest{left:0;width:0;background:var(--success);overflow:hidden;white-space:nowrap;padding:0;border-radius:12px 0 0 12px}
+.wagon-explain{left:0;width:0;background:var(--yellow);overflow:hidden;white-space:nowrap;padding:0;color:#000;border-radius:12px 0 0 12px}
+.wagon.tappable{cursor:pointer;padding:0 14px;z-index:3}
+
+/* Game card (used in list) */
+.game-card{position:relative;background:var(--card);border-radius:12px;overflow:hidden;display:flex;align-items:stretch;z-index:2;touch-action:pan-y}
+.game-cover{width:72px;min-height:80px;background-size:cover;background-position:center;flex-shrink:0;pointer-events:none}
+.game-body{padding:8px 0 8px 10px;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;pointer-events:none}
 .game-bottleneck{font-size:11px;color:var(--danger);font-weight:600;margin-bottom:1px}
 .game-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game-meta{font-size:12px;color:var(--text2);margin-top:2px}
@@ -35,25 +45,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .badge-neutral{background:rgba(255,255,255,.08);color:var(--text2)}
 .badge-int-me{background:rgba(76,175,80,.2);color:var(--success)}
 .badge-exp-me{background:rgba(255,193,7,.2);color:var(--yellow)}
-.sweet-spot{width:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 10px}
+.sweet-spot{width:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 10px;pointer-events:none}
 
 .bottom-nav{background:var(--surface);display:flex;border-top:1px solid #333;padding-bottom:var(--safe-bot)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0;cursor:pointer;color:var(--text2);font-size:11px;gap:2px}
 .nav-item.active{color:var(--tan)}
 .nav-item .icon{font-size:22px}
 
+/* Inbox card */
 .inbox-list{flex:1;overflow-y:auto;padding:12px 12px 90px;-webkit-overflow-scrolling:touch}
-.inbox-wrap{position:relative;margin-bottom:10px;height:72px;overflow:visible}
-.wagon{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border-radius:12px;color:#fff;z-index:0}
-.wagon-hide{right:0;width:100%;background:var(--danger);justify-content:flex-end;padding-right:20px}
-.wagon-interest{left:0;width:0;background:var(--success);overflow:hidden;white-space:nowrap;padding:0;border-radius:12px 0 0 12px}
-.wagon-explain{left:0;width:0;background:var(--yellow);overflow:hidden;white-space:nowrap;padding:0;color:#000;border-radius:12px 0 0 12px}
 .inbox-card{position:relative;background:var(--card);border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;z-index:2;height:72px;touch-action:pan-y}
 .inbox-card img{width:52px;height:52px;border-radius:8px;object-fit:cover;pointer-events:none}
 .inbox-card-info{flex:1;min-width:0;pointer-events:none}
 .inbox-card-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inbox-card-meta{font-size:12px;color:var(--text2)}
-.wagon.tappable{cursor:pointer;padding:0 14px;z-index:3}
 
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;z-index:100;display:none;align-items:center;gap:10px;white-space:nowrap;max-width:90vw}
 .toast.show{display:flex}
@@ -207,6 +212,152 @@ function ssSVG(ratio,sz=36){
 
 function bn(g){const b=[];if(!g.explainers.length)b.push('Kein Erklärer');if(!g.suppliers.length)b.push('Kein Lieferant');return b;}
 
+// ===== SHARED SWIPE ENGINE =====
+const SNAP_THRESHOLD=70;
+const FLY_THRESHOLD=160;
+const WAGON_W=90;
+let touchState={};
+
+function getTranslateX(el){
+  const m=el.style.transform.match(/translateX\(([^)]+)\)/);
+  return m?parseFloat(m[1]):0;
+}
+
+function swipeStart(e,key,cardEl){
+  if(snappedCardId&&snappedCardId!==key)unsnapCard(snappedCardId);
+  const t=e.touches[0];
+  const cx=getTranslateX(cardEl);
+  touchState[key]={startX:t.clientX,startY:t.clientY,offsetX:cx,moved:false};
+  cardEl.style.transition='none';
+}
+
+function swipeMove(e,key,cardEl,wiEl,weEl){
+  const ts=touchState[key];if(!ts)return;
+  const t=e.touches[0];
+  const dx=t.clientX-ts.startX;
+  const dy=t.clientY-ts.startY;
+  if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;
+  ts.moved=true;
+  e.preventDefault();
+  const totalX=ts.offsetX+dx;
+  cardEl.style.transform=`translateX(${totalX}px)`;
+  if(totalX>0){
+    const iw=Math.min(totalX,WAGON_W);
+    wiEl.style.width=iw+'px';wiEl.style.padding=iw>20?'0 12px':'0';
+    if(totalX>WAGON_W){
+      const ew=Math.min(totalX-WAGON_W,WAGON_W);
+      weEl.style.width=ew+'px';weEl.style.padding=ew>20?'0 12px':'0';weEl.style.left=iw+'px';
+    }else{weEl.style.width='0';weEl.style.padding='0';}
+  }else{
+    wiEl.style.width='0';wiEl.style.padding='0';
+    weEl.style.width='0';weEl.style.padding='0';
+  }
+}
+
+function swipeEnd(key,cardEl,gid,context){
+  const ts=touchState[key];if(!ts)return;
+  const totalX=getTranslateX(cardEl);
+  cardEl.style.transition='transform .3s ease';
+
+  if(totalX<-FLY_THRESHOLD){
+    cardEl.style.transform='translateX(-120%)';
+    setTimeout(()=>{doHide(gid,context);},300);
+  }else if(totalX>FLY_THRESHOLD){
+    cardEl.style.transform='translateX(120%)';
+    setTimeout(()=>{doInterest(gid,false,context);},300);
+  }else if(totalX>=SNAP_THRESHOLD){
+    snapCard(key,gid,context);
+  }else{
+    resetCard(key);
+  }
+  delete touchState[key];
+}
+
+function snapCard(key,gid,context){
+  snappedCardId=key;
+  const cardEl=document.getElementById('sc-'+key);
+  const wiEl=document.getElementById('wi-'+key);
+  const weEl=document.getElementById('we-'+key);
+  const snapX=WAGON_W*2;
+  cardEl.style.transition='transform .25s ease';
+  cardEl.style.transform=`translateX(${snapX}px)`;
+  wiEl.style.width=WAGON_W+'px';wiEl.style.padding='0 12px';
+  weEl.style.width=WAGON_W+'px';weEl.style.padding='0 10px';weEl.style.left=WAGON_W+'px';
+  wiEl.classList.add('tappable');weEl.classList.add('tappable');
+  wiEl.onclick=()=>{doInterest(gid,false,context);};
+  weEl.onclick=()=>{doInterest(gid,true,context);};
+}
+
+function unsnapCard(key){
+  if(snappedCardId===key)snappedCardId=null;
+  resetCard(key);
+}
+
+function resetCard(key){
+  const cardEl=document.getElementById('sc-'+key);
+  const wiEl=document.getElementById('wi-'+key);
+  const weEl=document.getElementById('we-'+key);
+  if(!cardEl)return;
+  cardEl.style.transition='transform .25s ease';
+  cardEl.style.transform='translateX(0)';
+  wiEl.style.width='0';wiEl.style.padding='0';wiEl.classList.remove('tappable');wiEl.onclick=null;
+  weEl.style.width='0';weEl.style.padding='0';weEl.classList.remove('tappable');weEl.onclick=null;
+  if(snappedCardId===key)snappedCardId=null;
+}
+
+function doInterest(gid,withNeed,context){
+  const g=games.find(x=>x.id===gid);if(!g)return;
+  if(!g.interested.includes(ME))g.interested.push(ME);
+  if(withNeed&&!g.needsExplain.includes(ME))g.needsExplain.push(ME);
+  lastAction={type:'interest',id:gid,withNeed};
+  snappedCardId=null;
+  renderList();if(context==='inbox')renderInbox();
+  showToast(`${g.name} — Interesse${withNeed?' + Erklärbedarf':''}`);
+}
+
+function doHide(gid,context){
+  const g=games.find(x=>x.id===gid);if(!g)return;
+  if(!g.hidden.includes(ME))g.hidden.push(ME);
+  lastAction={type:'hide',id:gid};
+  snappedCardId=null;
+  renderList();if(context==='inbox')renderInbox();
+  showToast(`${g.name} — ausgeblendet`);
+}
+
+function undoLast(){
+  if(!lastAction)return;
+  const g=games.find(x=>x.id===lastAction.id);if(!g)return;
+  if(lastAction.type==='interest'){
+    g.interested=g.interested.filter(p=>p!==ME);
+    if(lastAction.withNeed)g.needsExplain=g.needsExplain.filter(p=>p!==ME);
+  }else if(lastAction.type==='hide'){
+    g.hidden=g.hidden.filter(p=>p!==ME);
+  }
+  lastAction=null;hideToast();
+  renderList();renderInbox();
+}
+
+function attachSwipe(key,gid,context){
+  const card=document.getElementById('sc-'+key);
+  const wi=document.getElementById('wi-'+key);
+  const we=document.getElementById('we-'+key);
+  card.addEventListener('touchstart',e=>swipeStart(e,key,card),{passive:true});
+  card.addEventListener('touchmove',e=>swipeMove(e,key,card,wi,we),{passive:false});
+  card.addEventListener('touchend',()=>swipeEnd(key,card,gid,context));
+}
+
+// Tap vs swipe: open detail only if no swipe happened
+let tapKey=null;
+function onCardTap(gid,key){
+  setTimeout(()=>{
+    if(!touchState[key]||(touchState[key]&&!touchState[key].moved)){
+      const card=document.getElementById('sc-'+key);
+      if(card&&getTranslateX(card)===0) openDetail(gid);
+    }
+  },10);
+}
+
+// ===== GAME LIST =====
 function renderFilters(){
   document.getElementById('filters').innerHTML=
     ['all','mine','bottleneck'].map((f,i)=>{
@@ -217,9 +368,9 @@ function renderFilters(){
 function setFilter(f){currentFilter=f;renderFilters();renderList();}
 
 function renderList(){
-  let list=games;
-  if(currentFilter==='mine')list=games.filter(g=>g.interested.includes(ME));
-  if(currentFilter==='bottleneck')list=games.filter(g=>bn(g).length>0);
+  let list=games.filter(g=>!g.hidden.includes(ME));
+  if(currentFilter==='mine')list=list.filter(g=>g.interested.includes(ME));
+  if(currentFilter==='bottleneck')list=list.filter(g=>bn(g).length>0);
   const el=document.getElementById('game-list');
   el.innerHTML=list.map(g=>{
     const ratio=g.interested.length/g.max;
@@ -236,15 +387,32 @@ function renderList(){
       const label=isMe?'Du erklärst':pName(e)+' erklärt';
       badges+=`<span class="badge ${isMe?'badge-exp-me':'badge-neutral'}">${label}</span>`;
     });
-    return`<div class="game-card" onclick="openDetail('${g.id}')">
-      <div class="game-cover" style="background-image:url('${g.img}')"></div>
-      <div class="game-body">${bnText}<div class="game-name">${g.name}</div>
-        <div class="game-meta">${g.min}–${g.max} Sp. · ${g.time} Min · ${g.weight}</div>
-        <div class="game-badges">${badges}</div></div>
-      <div class="sweet-spot">${ssSVG(ratio)}</div></div>`;
+    const key='list-'+g.id;
+    return`<div class="swipe-wrap">
+      <div class="wagon wagon-hide">Ausblenden</div>
+      <div class="wagon wagon-interest" id="wi-${key}">Interesse</div>
+      <div class="wagon wagon-explain" id="we-${key}">Erklärbedarf</div>
+      <div class="game-card" id="sc-${key}" data-gid="${g.id}">
+        <div class="game-cover" style="background-image:url('${g.img}')"></div>
+        <div class="game-body">${bnText}<div class="game-name">${g.name}</div>
+          <div class="game-meta">${g.min}–${g.max} Sp. · ${g.time} Min · ${g.weight}</div>
+          <div class="game-badges">${badges}</div></div>
+        <div class="sweet-spot">${ssSVG(ratio)}</div>
+      </div></div>`;
   }).join('');
+
+  // Attach swipe + tap
+  list.forEach(g=>{
+    const key='list-'+g.id;
+    attachSwipe(key,g.id,'list');
+    const card=document.getElementById('sc-'+key);
+    card.addEventListener('click',()=>{
+      if(getTranslateX(card)===0&&!(touchState[key]&&touchState[key].moved)) openDetail(g.id);
+    });
+  });
 }
 
+// ===== DETAIL =====
 let detailGameId=null;
 function openDetail(id){
   detailGameId=id;
@@ -372,11 +540,7 @@ function togglePicker(pid){
 }
 function closePicker(){document.getElementById('picker').classList.remove('show');}
 
-const SNAP_THRESHOLD=70;
-const FLY_THRESHOLD=160;
-const WAGON_W=90;
-let touchState={};
-
+// ===== INBOX =====
 function toggleInboxInfo(){
   const el=document.getElementById('inbox-info');
   el.style.display=el.style.display==='none'?'block':'none';
@@ -386,168 +550,30 @@ function renderInbox(){
   const list=games.filter(g=>!g.interested.includes(ME)&&!g.hidden.includes(ME));
   const el=document.getElementById('inbox-list');
   if(!list.length){el.innerHTML='<div class="empty-state">Alles durchgesehen! 🎉</div>';return;}
-  el.innerHTML=list.map(g=>`
-    <div class="inbox-wrap" id="iw-${g.id}">
+  el.innerHTML=list.map(g=>{
+    const key='inbox-'+g.id;
+    return`<div class="swipe-wrap" style="height:72px">
       <div class="wagon wagon-hide">Ausblenden</div>
-      <div class="wagon wagon-interest" id="wi-${g.id}">Interesse</div>
-      <div class="wagon wagon-explain" id="we-${g.id}">Erklärbedarf</div>
-      <div class="inbox-card" id="ic-${g.id}">
+      <div class="wagon wagon-interest" id="wi-${key}">Interesse</div>
+      <div class="wagon wagon-explain" id="we-${key}">Erklärbedarf</div>
+      <div class="inbox-card" id="sc-${key}">
         <img src="${g.img}" alt="">
         <div class="inbox-card-info">
           <div class="inbox-card-name">${g.name}</div>
           <div class="inbox-card-meta">${g.min}–${g.max} Sp. · ${g.time} Min</div>
         </div>
-        <div>${ssSVG(g.interested.length/g.max,30)}</div>
+        <div style="pointer-events:none">${ssSVG(g.interested.length/g.max,30)}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   list.forEach(g=>{
-    const card=document.getElementById('ic-'+g.id);
-    card.addEventListener('touchstart',e=>onTouchStart(e,g.id),{passive:true});
-    card.addEventListener('touchmove',e=>onTouchMove(e,g.id),{passive:false});
-    card.addEventListener('touchend',e=>onTouchEnd(e,g.id));
+    const key='inbox-'+g.id;
+    attachSwipe(key,g.id,'inbox');
   });
 }
 
-function onTouchStart(e,id){
-  if(snappedCardId&&snappedCardId!==id)unsnapCard(snappedCardId);
-  const t=e.touches[0];
-  const card=document.getElementById('ic-'+id);
-  const currentX=getTranslateX(card);
-  touchState[id]={startX:t.clientX,startY:t.clientY,offsetX:currentX,moved:false};
-  card.style.transition='none';
-}
-
-function onTouchMove(e,id){
-  const ts=touchState[id];if(!ts)return;
-  const t=e.touches[0];
-  const dx=t.clientX-ts.startX;
-  const dy=t.clientY-ts.startY;
-  if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;
-  ts.moved=true;
-  e.preventDefault();
-  const totalX=ts.offsetX+dx;
-  const card=document.getElementById('ic-'+id);
-  const wi=document.getElementById('wi-'+id);
-  const we=document.getElementById('we-'+id);
-
-  card.style.transform=`translateX(${totalX}px)`;
-
-  if(totalX>0){
-    const interestW=Math.min(totalX,WAGON_W);
-    wi.style.width=interestW+'px';
-    wi.style.padding=interestW>20?'0 12px':'0';
-    if(totalX>WAGON_W){
-      const explainW=Math.min(totalX-WAGON_W,WAGON_W);
-      we.style.width=explainW+'px';
-      we.style.padding=explainW>20?'0 12px':'0';
-      we.style.left=interestW+'px';
-    }else{
-      we.style.width='0';we.style.padding='0';
-    }
-  }else{
-    wi.style.width='0';wi.style.padding='0';
-    we.style.width='0';we.style.padding='0';
-  }
-}
-
-function onTouchEnd(e,id){
-  const ts=touchState[id];if(!ts)return;
-  const card=document.getElementById('ic-'+id);
-  const totalX=getTranslateX(card);
-  card.style.transition='transform .3s ease';
-
-  if(totalX<-FLY_THRESHOLD){
-    card.style.transform=`translateX(-120%)`;
-    setTimeout(()=>doHide(id),300);
-  }else if(totalX>FLY_THRESHOLD){
-    card.style.transform=`translateX(120%)`;
-    setTimeout(()=>doInterest(id,false),300);
-  }else if(totalX>=SNAP_THRESHOLD){
-    snapCard(id);
-  }else{
-    resetCard(id);
-  }
-  delete touchState[id];
-}
-
-function snapCard(id){
-  snappedCardId=id;
-  const card=document.getElementById('ic-'+id);
-  const wi=document.getElementById('wi-'+id);
-  const we=document.getElementById('we-'+id);
-  const snapX=WAGON_W*2;
-  card.style.transition='transform .25s ease';
-  card.style.transform=`translateX(${snapX}px)`;
-  wi.style.width=WAGON_W+'px';wi.style.padding='0 12px';
-  we.style.width=WAGON_W+'px';we.style.padding='0 10px';we.style.left=WAGON_W+'px';
-  wi.classList.add('tappable');we.classList.add('tappable');
-  wi.onclick=()=>{doInterest(id,false);};
-  we.onclick=()=>{doInterest(id,true);};
-}
-
-function unsnapCard(id){
-  if(snappedCardId===id)snappedCardId=null;
-  resetCard(id);
-}
-
-function resetCard(id){
-  const card=document.getElementById('ic-'+id);
-  const wi=document.getElementById('wi-'+id);
-  const we=document.getElementById('we-'+id);
-  if(!card)return;
-  card.style.transition='transform .25s ease';
-  card.style.transform='translateX(0)';
-  wi.style.width='0';wi.style.padding='0';wi.classList.remove('tappable');wi.onclick=null;
-  we.style.width='0';we.style.padding='0';we.classList.remove('tappable');we.onclick=null;
-  if(snappedCardId===id)snappedCardId=null;
-}
-
-function doInterest(id,withNeed){
-  const g=games.find(x=>x.id===id);if(!g)return;
-  if(!g.interested.includes(ME))g.interested.push(ME);
-  if(withNeed&&!g.needsExplain.includes(ME))g.needsExplain.push(ME);
-  lastAction={type:'interest',id,withNeed};
-  snappedCardId=null;
-  renderList();renderInbox();
-  showToast(`${g.name} — Interesse${withNeed?' + Erklärbedarf':''}`);
-}
-
-function doHide(id){
-  const g=games.find(x=>x.id===id);if(!g)return;
-  if(!g.hidden.includes(ME))g.hidden.push(ME);
-  lastAction={type:'hide',id};
-  snappedCardId=null;
-  renderList();renderInbox();
-  showToast(`${g.name} — ausgeblendet`);
-}
-
-function undoLast(){
-  if(!lastAction)return;
-  const g=games.find(x=>x.id===lastAction.id);if(!g)return;
-  if(lastAction.type==='interest'){
-    g.interested=g.interested.filter(p=>p!==ME);
-    if(lastAction.withNeed)g.needsExplain=g.needsExplain.filter(p=>p!==ME);
-  }else if(lastAction.type==='hide'){
-    g.hidden=g.hidden.filter(p=>p!==ME);
-  }
-  lastAction=null;hideToast();
-  renderList();renderInbox();
-}
-
-function getTranslateX(el){
-  const m=el.style.transform.match(/translateX\(([^)]+)\)/);
-  return m?parseFloat(m[1]):0;
-}
-
-function showToast(msg){
-  clearTimeout(toastTimer);
-  document.getElementById('toast-text').textContent=msg;
-  document.getElementById('toast').classList.add('show');
-  toastTimer=setTimeout(hideToast,3500);
-}
-function hideToast(){document.getElementById('toast').classList.remove('show');}
-
+// ===== NAV =====
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
@@ -558,6 +584,14 @@ function switchTab(el,screen){
   showScreen(screen);
   if(screen==='inbox')renderInbox();
 }
+
+function showToast(msg){
+  clearTimeout(toastTimer);
+  document.getElementById('toast-text').textContent=msg;
+  document.getElementById('toast').classList.add('show');
+  toastTimer=setTimeout(hideToast,3500);
+}
+function hideToast(){document.getElementById('toast').classList.remove('show');}
 
 renderFilters();renderList();
 </script>

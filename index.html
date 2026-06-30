@@ -36,18 +36,22 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .tab.active{color:var(--tan);border-bottom-color:var(--tan)}
 .tab-dot{display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-left:3px;vertical-align:middle}
 /* Game card */
-.game-card{background:var(--card);border-radius:12px;margin-bottom:10px;overflow:hidden;position:relative;touch-action:pan-y}
-.game-card-inner{padding:12px;transition:transform .2s}
+.game-card{background:var(--card);border-radius:12px;margin-bottom:10px;overflow:hidden;position:relative;touch-action:pan-y;z-index:2}
+.game-card-inner{padding:12px}
 .game-meta{font-size:11px;color:var(--muted);margin-top:2px}
 .game-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .tag{font-size:10px;padding:2px 7px;border-radius:10px;background:#333;color:var(--muted)}
 .tag.tan{background:rgba(184,160,130,.2);color:var(--tan)}
 .tag.green{background:rgba(90,158,111,.2);color:var(--green)}
 .tag.yellow{background:rgba(212,160,23,.2);color:var(--yellow)}
-.swipe-actions{position:absolute;top:0;bottom:0;right:0;display:flex;align-items:stretch}
-.swipe-action{display:flex;flex-direction:column;align-items:center;justify-content:center;width:72px;font-size:10px;font-weight:600;cursor:pointer;gap:4px}
-.swipe-action.ignore{background:#444;color:var(--muted)}
-.swipe-action.interest{background:rgba(184,160,130,.3);color:var(--tan)}
+/* Zugwaggon swipe */
+.swipe-wrap{position:relative;overflow:visible}
+.wagon{position:absolute;top:0;height:100%;display:flex;align-items:center;font-size:12px;font-weight:700;border-radius:12px;color:#fff;z-index:0;overflow:hidden;white-space:nowrap}
+.wagon-hide{right:0;width:100%;background:var(--red);justify-content:flex-end;padding-right:20px}
+.wagon-interest{left:0;width:0;background:var(--green);padding:0;border-radius:12px 0 0 12px}
+.wagon-explain{left:0;width:0;background:var(--yellow);padding:0;color:#111;border-radius:12px 0 0 12px}
+.wagon.tappable{cursor:pointer;padding:0 14px;z-index:3}
+.swipe-wrap .game-card{margin-bottom:0}
 .btn-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 /* Time bar */
 .time-bar-wrap{margin:8px 0}
@@ -186,7 +190,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   </div>
 </div>
 
-<!-- SCREEN: SPIELE (Spieleliste) -->
+<!-- SCREEN: SPIELE -->
 <div class="screen" id="screen-list">
   <div class="app-bar">
     <button class="icon-btn" id="event-title-btn" onclick="toggleEventDropdown()" style="background:none;border:none;color:var(--tan);font-size:17px;font-weight:700;cursor:pointer;flex:1;text-align:left;padding:0">Dice Days</button>
@@ -194,9 +198,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="avatar-btn" id="avatar-list" onclick="openUserOverlay()">DE</button>
     <div class="event-dropdown" id="event-dropdown"></div>
   </div>
-  <!-- Banners -->
   <div id="msg-banner-list" style="padding:8px 12px 0"></div>
-  <!-- PayPal banner -->
   <div class="paypal-banner" id="paypal-banner" style="display:none;margin:8px 12px 0">
     <div class="pp-text">Noch nicht bezahlt. Beitrag: <strong id="pp-amount">35€</strong></div>
     <button class="pp-btn" onclick="openPayPal()">PayPal ↗</button>
@@ -218,7 +220,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="scroll-area" id="game-list-scroll">
     <div id="game-list"></div>
     <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="showAddGame()">+ Spiel hinzufügen</button>
-    <!-- Polls area -->
     <div id="polls-area" style="margin-top:16px"></div>
   </div>
 </div>
@@ -336,26 +337,26 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   </button>
 </div>
 
-</div><!-- #app -->
+</div>
 <script>
 // ============================================================
 // STATE
 // ============================================================
-let users = [
+var users = [
   {id:'u1', name:'Denis', password:'imsaved', initials:'DE', color:'#B8A082'},
   {id:'u2', name:'Matthias', password:'qwertzu', initials:'MA', color:'#7B9E87'},
 ];
-let currentUserId = 'u1';
-let userMemberships = {'u1':['ev1'], 'u2':[]};
-let userActiveEvent = {'u1':'ev1', 'u2':null};
-let userParticipantIds = {'u1':{'ev1':'p-me'}};
-let userSchedules = {
+var currentUserId = 'u1';
+var userMemberships = {'u1':['ev1'], 'u2':[]};
+var userActiveEvent = {'u1':'ev1', 'u2':null};
+var userParticipantIds = {'u1':{'ev1':'p-me'}};
+var userSchedules = {
   'u1': {
     'ev1': {arrivalDate:'2025-07-18',arrivalTime:'16:00',departureDate:'2025-07-20',departureTime:'11:00',sleepStart:'03:00',sleepEnd:'08:00',saved:true}
   }
 };
 
-let allEvents = [
+var allEvents = [
   {id:'ev1', name:'Dice Days 12', code:'ABC123', password:null,
    arrivalDate:'2025-07-18', arrivalTime:'15:00',
    departureDate:'2025-07-20', departureTime:'12:00',
@@ -368,7 +369,7 @@ let allEvents = [
    hasBuffet:false, adminMsg:null, payAmount:'30€', paypalLink:'https://paypal.me/demo'},
 ];
 
-let eventGames = {
+var eventGames = {
   'ev1': [
     {id:'g1', name:'Twilight Imperium 4', bgg:'https://boardgamegeek.com/boardgame/233078', complexity:4.3, players:'3–6', duration:480, wish:false, ignored:false, interested:['p-me','p2'], explainers:['p2'], suppliers:['p2'], erkTime:480, ts:1700000001},
     {id:'g2', name:'Wingspan', bgg:'https://boardgamegeek.com/boardgame/266192', complexity:2.4, players:'1–5', duration:70, wish:false, ignored:false, interested:['p-me'], explainers:['p-me'], suppliers:['p-me'], erkTime:70, ts:1700000002},
@@ -380,7 +381,7 @@ let eventGames = {
   'ev2': []
 };
 
-let eventParticipants = {
+var eventParticipants = {
   'ev1': [
     {id:'p-me', name:'Denis', color:'#B8A082'},
     {id:'p2', name:'Anna', color:'#7B9E87'},
@@ -390,7 +391,7 @@ let eventParticipants = {
   'ev2': []
 };
 
-let eventPackItems = {
+var eventPackItems = {
   'ev1': [
     {id:'pk1', participantId:'p-me', text:'Catan', type:'game', checked:false},
     {id:'pk2', participantId:'p-me', text:'Würfel-Set', type:'supply', checked:false},
@@ -402,12 +403,12 @@ let eventPackItems = {
   'ev2': []
 };
 
-let eventPayments = {
+var eventPayments = {
   'ev1': {'p-me':false, 'p2':true, 'p3':false, 'p4':true},
   'ev2': {}
 };
 
-let eventTrades = {
+var eventTrades = {
   'ev1': [
     {id:'tr1', fromId:'p-me', toId:'p2', item:'Wingspan Promo Pack', status:'packed', fromPacked:true, toPacked:false},
     {id:'tr2', fromId:'p3', toId:'p-me', item:'Bierdeckel-Spielsteine', status:'offered', fromPacked:false, toPacked:false},
@@ -415,48 +416,32 @@ let eventTrades = {
   'ev2': []
 };
 
-let virtualParticipants = [];
-let banners = [];
-let polls = [];
-let nextBannerId = 1;
-let nextPollId = 1;
-let nextVpId = 1;
-let nextUserId = 3;
+var virtualParticipants = [];
+var banners = [];
+var polls = [];
+var nextBannerId = 1;
+var nextPollId = 1;
+var nextVpId = 1;
+var nextUserId = 3;
 
-let controlMode = 'button'; // 'swipe' | 'button'
-let showIgnored = false;
-let currentListTab = 'all';
-let adminUnlocked = false;
-let adminTab = 'event'; // 'event' | 'banners' | 'polls' | 'vp'
-let adminBannerTrigger = 'date';
-let pwOverlayCallback = null;
+var controlMode = 'button';
+var snappedCardId = null;
+var showIgnored = false;
+var currentListTab = 'all';
+var adminUnlocked = false;
+var adminTab = 'event';
+var adminBannerTrigger = 'date';
+var pwOverlayCallback = null;
 
 // ============================================================
 // COMPUTED ACCESSORS
 // ============================================================
-function currentEventId() {
-  return userActiveEvent[currentUserId] || null;
-}
-function currentEvent() {
-  var id = currentEventId();
-  return id ? allEvents.find(e => e.id === id) || null : null;
-}
-function currentGames() {
-  var id = currentEventId();
-  return id ? (eventGames[id] || []) : [];
-}
-function currentParticipants() {
-  var id = currentEventId();
-  return id ? (eventParticipants[id] || []) : [];
-}
-function currentPackItems() {
-  var id = currentEventId();
-  return id ? (eventPackItems[id] || []) : [];
-}
-function currentTrades() {
-  var id = currentEventId();
-  return id ? (eventTrades[id] || []) : [];
-}
+function currentEventId() { return userActiveEvent[currentUserId] || null; }
+function currentEvent() { var id=currentEventId(); return id ? allEvents.find(function(e){return e.id===id;})||null : null; }
+function currentGames() { var id=currentEventId(); return id ? (eventGames[id]||[]) : []; }
+function currentParticipants() { var id=currentEventId(); return id ? (eventParticipants[id]||[]) : []; }
+function currentPackItems() { var id=currentEventId(); return id ? (eventPackItems[id]||[]) : []; }
+function currentTrades() { var id=currentEventId(); return id ? (eventTrades[id]||[]) : []; }
 function ME() {
   var evId = currentEventId();
   if (!evId) return null;
@@ -467,88 +452,66 @@ function mySchedule() {
   var evId = currentEventId();
   if (!evId) return null;
   var us = userSchedules[currentUserId];
-  return us ? (us[evId] || null) : null;
+  return us ? (us[evId]||null) : null;
 }
 
 // ============================================================
 // TIME BAR
 // ============================================================
 function getScheduleMinutes() {
-  var ev = currentEvent();
-  var sched = mySchedule();
+  var ev = currentEvent(), sched = mySchedule();
   if (!ev) return {total:0, sleep:0, available:0};
   var src = (sched && sched.saved) ? sched : ev;
-  function toMin(dateStr, timeStr) {
-    var d = new Date(dateStr + 'T' + timeStr);
-    return d.getTime() / 60000;
-  }
-  var arrMin = toMin(src.arrivalDate || ev.arrivalDate, src.arrivalTime || ev.arrivalTime);
-  var depMin = toMin(src.departureDate || ev.departureDate, src.departureTime || ev.departureTime);
-  var total = Math.max(0, depMin - arrMin);
+  function toMin(d, t) { return new Date(d+'T'+t).getTime()/60000; }
+  var total = Math.max(0, toMin(src.departureDate||ev.departureDate, src.departureTime||ev.departureTime) - toMin(src.arrivalDate||ev.arrivalDate, src.arrivalTime||ev.arrivalTime));
   var sleep = 0;
   if (src.sleepStart && src.sleepEnd) {
-    var ss = parseInt(src.sleepStart.split(':')[0])*60 + parseInt(src.sleepStart.split(':')[1]);
-    var se = parseInt(src.sleepEnd.split(':')[0])*60 + parseInt(src.sleepEnd.split(':')[1]);
+    var ss = parseInt(src.sleepStart)*60+parseInt(src.sleepStart.split(':')[1]);
+    var se = parseInt(src.sleepEnd)*60+parseInt(src.sleepEnd.split(':')[1]);
     if (se <= ss) se += 1440;
-    var nights = Math.floor(total / 1440) + 1;
-    sleep = Math.min((se - ss) * nights, total * 0.5);
+    sleep = Math.min((se-ss)*Math.max(1,Math.floor(total/1440)), total*0.5);
   }
-  return {total: total, sleep: sleep, available: Math.max(0, total - sleep)};
+  return {total:total, sleep:sleep, available:Math.max(0,total-sleep)};
 }
 
 function getTimePlan() {
-  var me = ME();
-  var games = currentGames();
-  var erkTime = 0, mitTime = 0;
-  var erkGames = [], mitGames = [];
+  var me = ME(), games = currentGames();
+  var erkTime=0, mitTime=0, erkGames=[], mitGames=[];
   games.forEach(function(g) {
-    if (g.wish || g.ignored) return;
-    var amExplainer = me && g.explainers.indexOf(me) >= 0;
-    var amInterested = me && g.interested.indexOf(me) >= 0;
-    if (amExplainer) {
-      erkTime += (g.erkTime || g.duration || 0);
-      erkGames.push(g);
-    } else if (amInterested) {
-      mitTime += (g.duration || 0);
-      mitGames.push(g);
-    }
+    if (g.wish||g.ignored) return;
+    var amExp = me && g.explainers.indexOf(me)>=0;
+    var amInt = me && g.interested.indexOf(me)>=0;
+    if (amExp) { erkTime+=(g.erkTime||g.duration||0); erkGames.push(g); }
+    else if (amInt) { mitTime+=(g.duration||0); mitGames.push(g); }
   });
-  return {erkTime: erkTime, mitTime: mitTime, erkGames: erkGames, mitGames: mitGames};
+  return {erkTime:erkTime, mitTime:mitTime, erkGames:erkGames, mitGames:mitGames};
 }
 
 function renderUnifiedTimeBar(containerId) {
   var el = document.getElementById(containerId);
   if (!el) return;
-  var sched = getScheduleMinutes();
-  var plan = getTimePlan();
-  if (sched.total === 0) { el.innerHTML = ''; return; }
-  var sleepMin = sched.sleep;
-  var available = sched.available;
-  var erkMin = plan.erkTime;
-  var mitMin = plan.mitTime;
-  var usedMin = erkMin + mitMin + sleepMin;
-  var totalMin = sched.total;
-  var overplanned = usedMin > totalMin;
-  var erkPct = Math.min(erkMin / totalMin * 100, 100);
-  var mitPct = Math.min(mitMin / totalMin * 100, Math.max(0, 100 - erkPct));
-  var sleepPct = Math.min(sleepMin / totalMin * 100, Math.max(0, 100 - erkPct - mitPct));
-  function fmtH(m) {
-    var h = Math.floor(m/60), mn = Math.round(m%60);
-    return h > 0 ? h+'h'+(mn>0?mn+'m':'') : mn+'m';
-  }
-  el.innerHTML =
-    '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Zeitplanung</div>' +
-    '<div class="time-bar-track' + (overplanned?' overplanned':'') + '">' +
-      '<div class="time-bar-seg" style="width:'+erkPct+'%;background:var(--yellow)"></div>' +
-      '<div class="time-bar-seg" style="width:'+mitPct+'%;background:var(--tan)"></div>' +
-      '<div class="time-bar-seg" style="width:'+sleepPct+'%;background:#3a3060"></div>' +
-    '</div>' +
-    (overplanned ? '<div class="overplanned-label">⚠ +'+fmtH(usedMin-totalMin)+' überplant!</div>' : '') +
-    '<div class="time-bar-legend">' +
-      '<span class="tbl-item"><span class="tbl-dot" style="background:var(--yellow)"></span>Erklären '+fmtH(erkMin)+'</span>' +
-      '<span class="tbl-item"><span class="tbl-dot" style="background:var(--tan)"></span>Mitspielen '+fmtH(mitMin)+'</span>' +
-      '<span class="tbl-item"><span class="tbl-dot" style="background:#3a3060;border:1px solid #555"></span>Schlaf '+fmtH(sleepMin)+'</span>' +
-      '<span class="tbl-item" style="color:var(--muted)">/ '+fmtH(totalMin)+' gesamt</span>' +
+  var sched = getScheduleMinutes(), plan = getTimePlan();
+  if (sched.total === 0) { el.innerHTML=''; return; }
+  var sleepMin=sched.sleep, totalMin=sched.total;
+  var erkMin=plan.erkTime, mitMin=plan.mitTime;
+  var usedMin=erkMin+mitMin+sleepMin;
+  var over=usedMin>totalMin;
+  var erkPct=Math.min(erkMin/totalMin*100,100);
+  var mitPct=Math.min(mitMin/totalMin*100,Math.max(0,100-erkPct));
+  var sleepPct=Math.min(sleepMin/totalMin*100,Math.max(0,100-erkPct-mitPct));
+  function fmtH(m){var h=Math.floor(m/60),mn=Math.round(m%60);return h>0?h+'h'+(mn>0?mn+'m':''):mn+'m';}
+  el.innerHTML='<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Zeitplanung</div>'+
+    '<div class="time-bar-track'+(over?' overplanned':'')+'">'+
+      '<div class="time-bar-seg" style="width:'+erkPct+'%;background:var(--yellow)"></div>'+
+      '<div class="time-bar-seg" style="width:'+mitPct+'%;background:var(--tan)"></div>'+
+      '<div class="time-bar-seg" style="width:'+sleepPct+'%;background:#3a3060"></div>'+
+    '</div>'+
+    (over?'<div class="overplanned-label">⚠ +'+fmtH(usedMin-totalMin)+' überplant!</div>':'')+
+    '<div class="time-bar-legend">'+
+      '<span class="tbl-item"><span class="tbl-dot" style="background:var(--yellow)"></span>Erklären '+fmtH(erkMin)+'</span>'+
+      '<span class="tbl-item"><span class="tbl-dot" style="background:var(--tan)"></span>Mitspielen '+fmtH(mitMin)+'</span>'+
+      '<span class="tbl-item"><span class="tbl-dot" style="background:#3a3060;border:1px solid #555"></span>Schlaf '+fmtH(sleepMin)+'</span>'+
+      '<span class="tbl-item" style="color:var(--muted)">/ '+fmtH(totalMin)+' gesamt</span>'+
     '</div>';
 }
 
@@ -556,27 +519,26 @@ function renderUnifiedTimeBar(containerId) {
 // NAVIGATION
 // ============================================================
 function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
-  var s = document.getElementById('screen-'+name);
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  var s=document.getElementById('screen-'+name);
   if (s) s.classList.add('active');
-  var nb = document.getElementById('nav-'+name);
+  var nb=document.getElementById('nav-'+name);
   if (nb) nb.classList.add('active');
-  document.getElementById('bottom-nav').style.display = (name === 'admin') ? 'none' : 'flex';
-  if (name === 'list') { renderGameList(); renderBanners(); renderPaypalBanner(); renderPolls(); updateEventTitle(); }
-  if (name === 'inbox') { renderInbox(); renderUnifiedTimeBar('inbox-timebar'); }
-  if (name === 'mit') { renderMit(); renderUnifiedTimeBar('mit-timebar'); }
-  if (name === 'erk') { renderErk(); renderUnifiedTimeBar('erk-timebar'); }
-  if (name === 'pack') renderPackliste();
-  if (name === 'buffet') renderBuffet();
-  if (name === 'admin') renderAdmin();
+  document.getElementById('bottom-nav').style.display=(name==='admin')?'none':'flex';
+  if (name==='list'){renderGameList();renderBanners();renderPaypalBanner();renderPolls();updateEventTitle();}
+  if (name==='inbox'){renderInbox();renderUnifiedTimeBar('inbox-timebar');}
+  if (name==='mit'){renderMit();renderUnifiedTimeBar('mit-timebar');}
+  if (name==='erk'){renderErk();renderUnifiedTimeBar('erk-timebar');}
+  if (name==='pack') renderPackliste();
+  if (name==='buffet') renderBuffet();
+  if (name==='admin') renderAdmin();
   updateAvatars();
 }
 
 function renderAll() {
-  var cur = document.querySelector('.screen.active');
-  var name = cur ? cur.id.replace('screen-','') : 'list';
-  showScreen(name);
+  var cur=document.querySelector('.screen.active');
+  showScreen(cur?cur.id.replace('screen-',''):'list');
   updateInboxDot();
 }
 
@@ -584,38 +546,30 @@ function renderAll() {
 // EVENT TITLE & DROPDOWN
 // ============================================================
 function updateEventTitle() {
-  var ev = currentEvent();
-  var btn = document.getElementById('event-title-btn');
+  var ev=currentEvent(), btn=document.getElementById('event-title-btn');
   if (!btn) return;
-  var mems = userMemberships[currentUserId] || [];
-  var inboxCount = getInboxGames().length;
-  var dot = inboxCount > 0 ? ' 🔴' : '';
-  btn.textContent = (ev ? ev.name : 'Kein Event') + (mems.length > 1 ? ' ▾' : '') + dot;
+  var mems=userMemberships[currentUserId]||[];
+  btn.textContent=(ev?ev.name:'Kein Event')+(mems.length>1?' ▾':'')+(getInboxGames().length>0?' 🔴':'');
 }
 
 function toggleEventDropdown() {
-  var mems = userMemberships[currentUserId] || [];
-  if (mems.length <= 1) return;
-  var dd = document.getElementById('event-dropdown');
+  var mems=userMemberships[currentUserId]||[];
+  if (mems.length<=1) return;
+  var dd=document.getElementById('event-dropdown');
   dd.classList.toggle('show');
   if (dd.classList.contains('show')) {
-    var html = '';
-    mems.forEach(function(evId) {
-      var ev = allEvents.find(function(e){ return e.id === evId; });
-      if (!ev) return;
-      var active = evId === currentEventId();
-      var inb = (eventGames[evId]||[]).filter(function(g){ return !g.ignored && !g.wish && g.interested.indexOf(ME())===(-1); }).length;
-      html += '<div class="event-dd-item" onclick="switchEvent(\''+evId+'\')">' +
-        (active ? '✓ ' : '') + ev.name +
-        (inb > 0 ? ' <span class="badge">'+inb+'</span>' : '') +
-      '</div>';
-    });
-    dd.innerHTML = html;
+    dd.innerHTML=mems.map(function(evId){
+      var ev=allEvents.find(function(e){return e.id===evId;});
+      if (!ev) return '';
+      var active=evId===currentEventId();
+      var inb=(eventGames[evId]||[]).filter(function(g){return !g.ignored&&!g.wish&&g.interested.indexOf(ME())<0;}).length;
+      return '<div class="event-dd-item" onclick="switchEvent(\''+evId+'\')">'+(active?'✓ ':'')+ev.name+(inb>0?' <span class="badge">'+inb+'</span>':'')+' </div>';
+    }).join('');
   }
 }
 
 function switchEvent(evId) {
-  userActiveEvent[currentUserId] = evId;
+  userActiveEvent[currentUserId]=evId;
   document.getElementById('event-dropdown').classList.remove('show');
   renderAll();
 }
@@ -623,50 +577,46 @@ function switchEvent(evId) {
 // ============================================================
 // USER / AVATAR
 // ============================================================
-function currentUser() {
-  return users.find(function(u){ return u.id === currentUserId; }) || users[0];
-}
+function currentUser() { return users.find(function(u){return u.id===currentUserId;})||users[0]; }
 
 function updateAvatars() {
-  var u = currentUser();
-  document.querySelectorAll('.avatar-btn').forEach(function(btn) {
-    btn.textContent = u.initials;
-    btn.style.borderColor = u.color;
-    btn.style.color = u.color;
+  var u=currentUser();
+  document.querySelectorAll('.avatar-btn').forEach(function(btn){
+    btn.textContent=u.initials;
+    btn.style.borderColor=u.color;
+    btn.style.color=u.color;
   });
 }
 
 function openUserOverlay() {
-  var html = '';
-  users.forEach(function(u) {
-    var active = u.id === currentUserId;
-    html += '<div class="participant-row" style="cursor:pointer" onclick="trySwitch(\''+u.id+'\',this)">' +
-      '<div class="p-avatar" style="background:'+u.color+'22;color:'+u.color+'">'+u.initials+'</div>' +
-      '<div style="flex:1"><div style="font-size:14px;color:var(--text)">'+u.name+'</div>' +
-      '<div style="font-size:11px;color:var(--muted)">'+(active?'Aktiv':'Wechseln')+'</div></div>' +
-      (active ? '<span style="color:var(--tan)">✓</span>' : '') +
+  document.getElementById('user-list-ul').innerHTML=users.map(function(u){
+    var active=u.id===currentUserId;
+    return '<div class="participant-row" style="cursor:pointer" onclick="trySwitch(\''+u.id+'\')">'+
+      '<div class="p-avatar" style="background:'+u.color+'22;color:'+u.color+'">'+u.initials+'</div>'+
+      '<div style="flex:1"><div style="font-size:14px;color:var(--text)">'+u.name+'</div>'+
+      '<div style="font-size:11px;color:var(--muted)">'+(active?'Aktiv':'Wechseln')+'</div></div>'+
+      (active?'<span style="color:var(--tan)">✓</span>':'')+
     '</div>';
-  });
-  document.getElementById('user-list-ul').innerHTML = html;
-  document.getElementById('new-user-name').value = '';
-  document.getElementById('new-user-pw').value = '';
+  }).join('');
+  document.getElementById('new-user-name').value='';
+  document.getElementById('new-user-pw').value='';
   showOverlay('user-overlay');
 }
 
-function trySwitch(uid, el) {
-  if (uid === currentUserId) { closeOverlay('user-overlay'); return; }
-  var u = users.find(function(x){ return x.id === uid; });
+function trySwitch(uid) {
+  if (uid===currentUserId){closeOverlay('user-overlay');return;}
+  var u=users.find(function(x){return x.id===uid;});
   if (!u) return;
   if (u.password) {
-    pwOverlayCallback = function(pw) {
-      if (pw !== u.password) return false;
+    pwOverlayCallback=function(pw){
+      if (pw!==u.password) return false;
       doSwitchUser(uid);
       closeOverlay('user-overlay');
       return true;
     };
-    document.getElementById('pw-overlay-title').textContent = 'Passwort für ' + u.name;
-    document.getElementById('pw-overlay-input').value = '';
-    document.getElementById('pw-overlay-err').style.display = 'none';
+    document.getElementById('pw-overlay-title').textContent='Passwort für '+u.name;
+    document.getElementById('pw-overlay-input').value='';
+    document.getElementById('pw-overlay-err').style.display='none';
     closeOverlay('user-overlay');
     showOverlay('pw-overlay');
   } else {
@@ -676,43 +626,31 @@ function trySwitch(uid, el) {
 }
 
 function submitPwOverlay() {
-  var pw = document.getElementById('pw-overlay-input').value;
+  var pw=document.getElementById('pw-overlay-input').value;
   if (pwOverlayCallback) {
-    var ok = pwOverlayCallback(pw);
+    var ok=pwOverlayCallback(pw);
     if (!ok) {
-      document.getElementById('pw-overlay-err').textContent = 'Falsches Passwort';
-      document.getElementById('pw-overlay-err').style.display = 'block';
-    } else {
-      pwOverlayCallback = null;
-      closeOverlay('pw-overlay');
-    }
+      document.getElementById('pw-overlay-err').textContent='Falsches Passwort';
+      document.getElementById('pw-overlay-err').style.display='block';
+    } else { pwOverlayCallback=null; closeOverlay('pw-overlay'); }
   }
 }
 
 function doSwitchUser(uid) {
-  currentUserId = uid;
-  adminUnlocked = false;
-  var mems = userMemberships[uid] || [];
-  if (mems.length === 0) {
-    showJoinScreen();
-  } else {
-    renderAll();
-    showScreen('list');
-  }
+  currentUserId=uid; adminUnlocked=false;
+  if ((userMemberships[uid]||[]).length===0) showJoinScreen();
+  else { renderAll(); showScreen('list'); }
 }
 
 function createNewUser() {
-  var name = document.getElementById('new-user-name').value.trim();
-  if (!name) { alert('Name erforderlich'); return; }
-  var pw = document.getElementById('new-user-pw').value.trim();
-  var initials = name.slice(0,2).toUpperCase();
-  var colors = ['#B8A082','#7B9E87','#9E7B8A','#7B8E9E','#9E9A7B','#7B9E9E'];
-  var color = colors[users.length % colors.length];
-  var uid = 'u' + (nextUserId++);
-  users.push({id:uid, name:name, password:pw||null, initials:initials, color:color});
-  userMemberships[uid] = [];
-  userActiveEvent[uid] = null;
-  userParticipantIds[uid] = {};
+  var name=document.getElementById('new-user-name').value.trim();
+  if (!name){alert('Name erforderlich');return;}
+  var pw=document.getElementById('new-user-pw').value.trim();
+  var initials=name.slice(0,2).toUpperCase();
+  var colors=['#B8A082','#7B9E87','#9E7B8A','#7B8E9E','#9E9A7B','#7B9E9E'];
+  var uid='u'+(nextUserId++);
+  users.push({id:uid,name:name,password:pw||null,initials:initials,color:colors[users.length%colors.length]});
+  userMemberships[uid]=[];userActiveEvent[uid]=null;userParticipantIds[uid]={};
   doSwitchUser(uid);
   closeOverlay('user-overlay');
 }
@@ -721,126 +659,93 @@ function createNewUser() {
 // JOIN SCREEN
 // ============================================================
 function showJoinScreen() {
-  document.getElementById('join-screen').style.display = 'flex';
-  document.getElementById('join-code').value = '';
-  document.getElementById('join-pw').value = '';
-  document.getElementById('join-pw-wrap').style.display = 'none';
-  document.getElementById('join-err').style.display = 'none';
-  // Check if code needs password
-  document.getElementById('join-code').oninput = function() {
-    var code = this.value.trim().toUpperCase();
-    var ev = allEvents.find(function(e){ return e.code === code; });
-    document.getElementById('join-pw-wrap').style.display = (ev && ev.password) ? 'block' : 'none';
+  document.getElementById('join-screen').style.display='flex';
+  document.getElementById('join-code').value='';
+  document.getElementById('join-pw').value='';
+  document.getElementById('join-pw-wrap').style.display='none';
+  document.getElementById('join-err').style.display='none';
+  document.getElementById('join-code').oninput=function(){
+    var code=this.value.trim().toUpperCase();
+    var ev=allEvents.find(function(e){return e.code===code;});
+    document.getElementById('join-pw-wrap').style.display=(ev&&ev.password)?'block':'none';
   };
 }
 
 function hideJoinScreen() {
-  document.getElementById('join-screen').style.display = 'none';
-  // If user has no memberships, switch back to first user with memberships
-  var mems = userMemberships[currentUserId] || [];
-  if (mems.length === 0) {
-    var fallback = users.find(function(u){ return (userMemberships[u.id]||[]).length > 0; });
+  document.getElementById('join-screen').style.display='none';
+  if ((userMemberships[currentUserId]||[]).length===0) {
+    var fallback=users.find(function(u){return (userMemberships[u.id]||[]).length>0;});
     if (fallback) doSwitchUser(fallback.id);
   }
 }
 
 function submitJoinEvent() {
-  var code = document.getElementById('join-code').value.trim().toUpperCase();
-  var pw = document.getElementById('join-pw').value.trim();
-  var errEl = document.getElementById('join-err');
-  var ev = allEvents.find(function(e){ return e.code === code; });
-  if (!ev) {
-    errEl.textContent = 'Event nicht gefunden.';
-    errEl.style.display = 'block';
-    return;
-  }
-  if (ev.password && pw !== ev.password) {
-    errEl.textContent = 'Falsches Passwort.';
-    errEl.style.display = 'block';
-    return;
-  }
-  // Already member?
-  var mems = userMemberships[currentUserId] || [];
-  if (mems.indexOf(ev.id) >= 0) {
-    userActiveEvent[currentUserId] = ev.id;
-    document.getElementById('join-screen').style.display = 'none';
-    renderAll(); showScreen('list');
-    return;
-  }
-  // Check virtual participant matching
-  var vp = virtualParticipants.find(function(v){ return v.eventId === ev.id && v.linkedUserId === null && v.code === code; });
+  var code=document.getElementById('join-code').value.trim().toUpperCase();
+  var pw=document.getElementById('join-pw').value.trim();
+  var errEl=document.getElementById('join-err');
+  var ev=allEvents.find(function(e){return e.code===code;});
+  if (!ev){errEl.textContent='Event nicht gefunden.';errEl.style.display='block';return;}
+  if (ev.password&&pw!==ev.password){errEl.textContent='Falsches Passwort.';errEl.style.display='block';return;}
+  var mems=userMemberships[currentUserId]||[];
+  if (mems.indexOf(ev.id)>=0){userActiveEvent[currentUserId]=ev.id;document.getElementById('join-screen').style.display='none';renderAll();showScreen('list');return;}
+  var vp=virtualParticipants.find(function(v){return v.eventId===ev.id&&v.linkedUserId===null&&v.code===code;});
   var pid;
-  if (vp) {
-    pid = vp.id;
-    vp.linkedUserId = currentUserId;
-  } else {
-    var u = currentUser();
-    pid = 'p-' + currentUserId;
-    if (!eventParticipants[ev.id]) eventParticipants[ev.id] = [];
-    if (!eventParticipants[ev.id].find(function(p){ return p.id === pid; })) {
-      eventParticipants[ev.id].push({id:pid, name:u.name, color:u.color});
-    }
+  if (vp){pid=vp.id;vp.linkedUserId=currentUserId;}
+  else {
+    var u=currentUser();
+    pid='p-'+currentUserId;
+    if (!eventParticipants[ev.id]) eventParticipants[ev.id]=[];
+    if (!eventParticipants[ev.id].find(function(p){return p.id===pid;}))
+      eventParticipants[ev.id].push({id:pid,name:u.name,color:u.color});
   }
-  if (!userMemberships[currentUserId]) userMemberships[currentUserId] = [];
+  if (!userMemberships[currentUserId]) userMemberships[currentUserId]=[];
   userMemberships[currentUserId].push(ev.id);
-  userActiveEvent[currentUserId] = ev.id;
-  if (!userParticipantIds[currentUserId]) userParticipantIds[currentUserId] = {};
-  userParticipantIds[currentUserId][ev.id] = pid;
-  if (!eventGames[ev.id]) eventGames[ev.id] = [];
-  if (!eventPackItems[ev.id]) eventPackItems[ev.id] = [];
-  if (!eventTrades[ev.id]) eventTrades[ev.id] = [];
-  if (!eventPayments[ev.id]) eventPayments[ev.id] = {};
-  document.getElementById('join-screen').style.display = 'none';
-  renderAll();
-  showScreen('list');
+  userActiveEvent[currentUserId]=ev.id;
+  if (!userParticipantIds[currentUserId]) userParticipantIds[currentUserId]={};
+  userParticipantIds[currentUserId][ev.id]=pid;
+  if (!eventGames[ev.id]) eventGames[ev.id]=[];
+  if (!eventPackItems[ev.id]) eventPackItems[ev.id]=[];
+  if (!eventTrades[ev.id]) eventTrades[ev.id]=[];
+  if (!eventPayments[ev.id]) eventPayments[ev.id]={};
+  document.getElementById('join-screen').style.display='none';
+  renderAll(); showScreen('list');
 }
 
 // ============================================================
 // OVERLAYS
 // ============================================================
-function showOverlay(id) { document.getElementById(id).classList.add('show'); }
-function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+function showOverlay(id){document.getElementById(id).classList.add('show');}
+function closeOverlay(id){document.getElementById(id).classList.remove('show');}
 
 // ============================================================
 // BANNERS
 // ============================================================
 function getActiveBanners() {
-  var evId = currentEventId();
-  var ev = currentEvent();
-  if (!evId || !ev) return [];
-  var today = new Date(); today.setHours(0,0,0,0);
-  return banners.filter(function(b) {
-    if (b.deleted) return false;
-    if (b.eventId !== evId) return false;
-    if (b.readBy.indexOf(currentUserId) >= 0) return false;
+  var evId=currentEventId(), ev=currentEvent();
+  if (!evId||!ev) return [];
+  var today=new Date();today.setHours(0,0,0,0);
+  return banners.filter(function(b){
+    if (b.deleted||b.eventId!==evId||b.readBy.indexOf(currentUserId)>=0) return false;
     var trigger;
-    if (b.triggerType === 'date') {
-      trigger = new Date(b.triggerDate);
-    } else {
-      var arrival = new Date(ev.arrivalDate);
-      trigger = new Date(arrival.getTime() - b.daysBefore * 86400000);
-    }
+    if (b.triggerType==='date') trigger=new Date(b.triggerDate);
+    else {var arr=new Date(ev.arrivalDate);trigger=new Date(arr.getTime()-b.daysBefore*86400000);}
     trigger.setHours(0,0,0,0);
-    return today >= trigger;
+    return today>=trigger;
   });
 }
 
 function renderBanners() {
-  var el = document.getElementById('msg-banner-list');
+  var el=document.getElementById('msg-banner-list');
   if (!el) return;
-  var active = getActiveBanners();
-  if (active.length === 0) { el.innerHTML = ''; return; }
-  el.innerHTML = active.map(function(b) {
-    return '<div class="msg-banner" id="banner-'+b.id+'">' +
-      '<p>' + escHtml(b.text) + '</p>' +
-      '<button class="btn btn-sm btn-primary" onclick="dismissBanner(\''+b.id+'\')">Gelesen ✓</button>' +
-    '</div>';
+  var active=getActiveBanners();
+  el.innerHTML=active.map(function(b){
+    return '<div class="msg-banner"><p>'+escHtml(b.text)+'</p><button class="btn btn-sm btn-primary" onclick="dismissBanner(\''+b.id+'\')">Gelesen ✓</button></div>';
   }).join('');
 }
 
 function dismissBanner(id) {
-  var b = banners.find(function(x){ return x.id === id; });
-  if (b && b.readBy.indexOf(currentUserId) < 0) b.readBy.push(currentUserId);
+  var b=banners.find(function(x){return x.id===id;});
+  if (b&&b.readBy.indexOf(currentUserId)<0) b.readBy.push(currentUserId);
   renderBanners();
 }
 
@@ -848,323 +753,244 @@ function dismissBanner(id) {
 // PAYPAL BANNER
 // ============================================================
 function renderPaypalBanner() {
-  var me = ME();
-  var ev = currentEvent();
-  var el = document.getElementById('paypal-banner');
-  if (!el || !ev || !me) { if(el) el.style.display='none'; return; }
-  var payments = eventPayments[ev.id] || {};
-  var paid = payments[me];
-  el.style.display = paid ? 'none' : 'flex';
-  var amtEl = document.getElementById('pp-amount');
-  if (amtEl) amtEl.textContent = ev.payAmount || '35€';
+  var me=ME(), ev=currentEvent(), el=document.getElementById('paypal-banner');
+  if (!el||!ev||!me){if(el)el.style.display='none';return;}
+  el.style.display=(eventPayments[ev.id]||{})[me]?'none':'flex';
+  var a=document.getElementById('pp-amount');
+  if (a) a.textContent=ev.payAmount||'35€';
 }
 
-function openPayPal() {
-  var ev = currentEvent();
-  if (ev && ev.paypalLink) window.open(ev.paypalLink, '_blank');
-}
+function openPayPal(){var ev=currentEvent();if(ev&&ev.paypalLink)window.open(ev.paypalLink,'_blank');}
 
 // ============================================================
 // POLLS
 // ============================================================
 function renderPolls() {
-  var evId = currentEventId();
-  var el = document.getElementById('polls-area');
+  var evId=currentEventId(), el=document.getElementById('polls-area');
   if (!el) return;
-  var evPolls = polls.filter(function(p){ return p.eventId === evId; });
-  if (evPolls.length === 0) { el.innerHTML = ''; return; }
-  el.innerHTML = '<div class="sec-hdr">Umfragen</div>' + evPolls.map(function(p) {
-    var totalVotes = Object.keys(p.votes).length;
-    var myVote = p.votes[currentUserId];
-    return '<div class="poll-card">' +
-      '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">'+escHtml(p.question)+'</div>' +
-      p.options.map(function(opt, i) {
-        var cnt = Object.values(p.votes).filter(function(v){ return v === i; }).length;
-        var pct = totalVotes > 0 ? Math.round(cnt/totalVotes*100) : 0;
-        var voted = myVote === i;
-        return '<div class="poll-option'+(voted?' voted':'')+'" onclick="votePoll(\''+p.id+'\','+i+')">' +
-          '<div style="flex:1">' +
-            '<div style="font-size:13px;color:var(--text)">'+escHtml(opt)+'</div>' +
-            '<div class="poll-bar" style="width:'+pct+'%"></div>' +
-          '</div>' +
-          '<div style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">'+pct+'%</div>' +
-        '</div>';
-      }).join('') +
-      '<div style="font-size:11px;color:var(--muted);margin-top:6px">'+totalVotes+' Stimme'+(totalVotes!==1?'n':'')+'</div>' +
-    '</div>';
+  var evPolls=polls.filter(function(p){return p.eventId===evId;});
+  if (!evPolls.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="sec-hdr">Umfragen</div>'+evPolls.map(function(p){
+    var total=Object.keys(p.votes).length, myVote=p.votes[currentUserId];
+    return '<div class="poll-card"><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">'+escHtml(p.question)+'</div>'+
+      p.options.map(function(opt,i){
+        var cnt=Object.values(p.votes).filter(function(v){return v===i;}).length;
+        var pct=total>0?Math.round(cnt/total*100):0;
+        return '<div class="poll-option'+(myVote===i?' voted':'')+'" onclick="votePoll(\''+p.id+'\','+i+')">'+
+          '<div style="flex:1"><div style="font-size:13px;color:var(--text)">'+escHtml(opt)+'</div>'+
+          '<div class="poll-bar" style="width:'+pct+'%"></div></div>'+
+          '<div style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">'+pct+'%</div></div>';
+      }).join('')+
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">'+total+' Stimme'+(total!==1?'n':'')+'</div></div>';
   }).join('');
 }
 
-function votePoll(id, idx) {
-  var p = polls.find(function(x){ return x.id === id; });
+function votePoll(id,idx){
+  var p=polls.find(function(x){return x.id===id;});
   if (!p) return;
-  if (p.votes[currentUserId] === idx) {
-    delete p.votes[currentUserId];
-  } else {
-    p.votes[currentUserId] = idx;
-  }
+  if (p.votes[currentUserId]===idx) delete p.votes[currentUserId];
+  else p.votes[currentUserId]=idx;
   renderPolls();
 }
+
+// ============================================================
+// SWIPE ENGINE (Zugwaggon pattern)
+// ============================================================
+var SNAP=70,FLY=160,WW=90;
+var touchState={};
+function gTX(el){var m=el.style.transform.match(/translateX\(([^)]+)\)/);return m?parseFloat(m[1]):0;}
+function swS(e,k,c){if(snappedCardId&&snappedCardId!==k)unsnap(snappedCardId);var t=e.touches[0];touchState[k]={sX:t.clientX,sY:t.clientY,oX:gTX(c),moved:false};c.style.transition='none';}
+function swM(e,k,c,wi,we){var ts=touchState[k];if(!ts)return;var t=e.touches[0],dx=t.clientX-ts.sX,dy=t.clientY-ts.sY;if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;ts.moved=true;e.preventDefault();var tx=ts.oX+dx;c.style.transform='translateX('+tx+'px)';if(tx>0){var iw=Math.min(tx,WW);wi.style.width=iw+'px';wi.style.padding=iw>20?'0 12px':'0';if(tx>WW){var ew=Math.min(tx-WW,WW);we.style.width=ew+'px';we.style.padding=ew>20?'0 12px':'0';we.style.left=iw+'px';}else{we.style.width='0';we.style.padding='0';}}else{wi.style.width='0';wi.style.padding='0';we.style.width='0';we.style.padding='0';}}
+function swE(k,c,gid,onRight,onLeft){var ts=touchState[k];if(!ts)return;var tx=gTX(c);c.style.transition='transform .3s ease';if(tx<-FLY){c.style.transform='translateX(-120%)';setTimeout(function(){onLeft(gid);},300);}else if(tx>FLY){c.style.transform='translateX(120%)';setTimeout(function(){onRight(gid,false);},300);}else if(tx>=SNAP){swSnap(k,gid,onRight);}else{resetC(k);}delete touchState[k];}
+function swSnap(k,gid,onRight){snappedCardId=k;var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);c.style.transition='transform .25s ease';c.style.transform='translateX('+(WW*2)+'px)';wi.style.width=WW+'px';wi.style.padding='0 12px';we.style.width=WW+'px';we.style.padding='0 10px';we.style.left=WW+'px';wi.classList.add('tappable');we.classList.add('tappable');wi.onclick=function(){onRight(gid,false);};we.onclick=function(){onRight(gid,true);};}
+function unsnap(k){if(snappedCardId===k)snappedCardId=null;resetC(k);}
+function resetC(k){var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);if(!c)return;c.style.transition='transform .25s ease';c.style.transform='translateX(0)';if(wi){wi.style.width='0';wi.style.padding='0';wi.classList.remove('tappable');wi.onclick=null;}if(we){we.style.width='0';we.style.padding='0';we.classList.remove('tappable');we.onclick=null;}if(snappedCardId===k)snappedCardId=null;}
+function attachSw(k,gid,onR,onL){var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);if(!c)return;c.addEventListener('touchstart',function(e){swS(e,k,c);},{passive:true});c.addEventListener('touchmove',function(e){swM(e,k,c,wi,we);},{passive:false});c.addEventListener('touchend',function(){swE(k,c,gid,onR,onL);});}
 
 // ============================================================
 // GAME LIST
 // ============================================================
 function getInboxGames() {
-  var me = ME();
+  var me=ME();
   if (!me) return [];
-  return currentGames().filter(function(g) {
-    return !g.wish && !g.ignored && g.interested.indexOf(me) < 0 && g.explainers.indexOf(me) < 0;
-  });
+  return currentGames().filter(function(g){return !g.wish&&!g.ignored&&g.interested.indexOf(me)<0&&g.explainers.indexOf(me)<0;});
 }
 
 function updateInboxDot() {
-  var dot = document.getElementById('inbox-dot');
-  if (dot) dot.style.display = getInboxGames().length > 0 ? 'block' : 'none';
+  var dot=document.getElementById('inbox-dot');
+  if (dot) dot.style.display=getInboxGames().length>0?'block':'none';
 }
 
 function sortGames(games) {
-  var s = document.getElementById('sort-select');
-  var v = s ? s.value : 'newest';
-  var arr = games.slice();
-  if (v === 'newest') arr.sort(function(a,b){ return b.ts - a.ts; });
-  else if (v === 'az') arr.sort(function(a,b){ return a.name.localeCompare(b.name); });
-  else if (v === 'complexity') arr.sort(function(a,b){ return (b.complexity||0) - (a.complexity||0); });
-  else if (v === 'players') arr.sort(function(a,b){ return (parseInt(a.players)||0) - (parseInt(b.players)||0); });
-  else if (v === 'duration') arr.sort(function(a,b){ return (a.duration||0) - (b.duration||0); });
+  var v=(document.getElementById('sort-select')||{value:'newest'}).value;
+  var arr=games.slice();
+  if (v==='newest') arr.sort(function(a,b){return b.ts-a.ts;});
+  else if (v==='az') arr.sort(function(a,b){return a.name.localeCompare(b.name);});
+  else if (v==='complexity') arr.sort(function(a,b){return (b.complexity||0)-(a.complexity||0);});
+  else if (v==='players') arr.sort(function(a,b){return (parseInt(a.players)||0)-(parseInt(b.players)||0);});
+  else if (v==='duration') arr.sort(function(a,b){return (a.duration||0)-(b.duration||0);});
   return arr;
 }
 
 function switchListTab(tab) {
-  currentListTab = tab;
-  document.querySelectorAll('#list-tabs .tab').forEach(function(t){ t.classList.remove('active'); });
-  var el = document.querySelector('#list-tabs [data-tab="'+tab+'"]');
+  currentListTab=tab;
+  document.querySelectorAll('#list-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  var el=document.querySelector('#list-tabs [data-tab="'+tab+'"]');
   if (el) el.classList.add('active');
   renderGameList();
 }
 
 function toggleIgnored() {
-  showIgnored = !showIgnored;
-  var btn = document.getElementById('eye-btn');
-  if (btn) {
-    btn.classList.toggle('active', showIgnored);
-    btn.style.opacity = showIgnored ? '1' : '0.5';
-  }
+  showIgnored=!showIgnored;
+  var btn=document.getElementById('eye-btn');
+  if (btn){btn.classList.toggle('active',showIgnored);btn.style.opacity=showIgnored?'1':'0.5';}
   renderGameList();
 }
 
 function renderGameList() {
-  var me = ME();
-  var games = currentGames();
-  // Update tab counts
-  var allGames = games.filter(function(g){ return !g.wish; });
-  var wishGames = games.filter(function(g){ return g.wish; });
-  var cnt = document.getElementById('tab-all-count');
-  if (cnt) cnt.textContent = allGames.length;
-  var wcnt = document.getElementById('tab-wish-count');
-  if (wcnt) wcnt.textContent = wishGames.length;
-  // Wish dot: wish game that I could fulfill (I have it - simplified: check suppliers empty)
-  var myGames = games.filter(function(g){ return !g.wish && me && g.suppliers.indexOf(me) >= 0; });
-  var myGameNames = myGames.map(function(g){ return g.name.toLowerCase(); });
-  var wishFulfillable = wishGames.some(function(g){ return myGameNames.indexOf(g.name.toLowerCase()) >= 0; });
-  var wd = document.getElementById('wish-dot');
-  if (wd) wd.style.display = wishFulfillable ? 'inline-block' : 'none';
+  var me=ME(), games=currentGames();
+  var allG=games.filter(function(g){return !g.wish;}), wishG=games.filter(function(g){return g.wish;});
+  var cnt=document.getElementById('tab-all-count');if(cnt)cnt.textContent=allG.length;
+  var wcnt=document.getElementById('tab-wish-count');if(wcnt)wcnt.textContent=wishG.length;
+  var myGames=games.filter(function(g){return !g.wish&&me&&g.suppliers.indexOf(me)>=0;});
+  var myNames=myGames.map(function(g){return g.name.toLowerCase();});
+  var wd=document.getElementById('wish-dot');
+  if (wd) wd.style.display=wishG.some(function(g){return myNames.indexOf(g.name.toLowerCase())>=0;})?'inline-block':'none';
 
-  var filtered;
-  if (currentListTab === 'wish') {
-    filtered = wishGames;
-  } else {
-    filtered = allGames;
-    if (!showIgnored) filtered = filtered.filter(function(g){ return !g.ignored; });
-  }
-  filtered = sortGames(filtered);
+  var filtered=currentListTab==='wish'?wishG:allG;
+  if (currentListTab!=='wish'&&!showIgnored) filtered=filtered.filter(function(g){return !g.ignored;});
+  filtered=sortGames(filtered);
 
-  var el = document.getElementById('game-list');
+  var el=document.getElementById('game-list');
   if (!el) return;
-  if (filtered.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele</div>';
-    updateInboxDot();
-    return;
+  if (!filtered.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele</div>';updateInboxDot();return;}
+
+  el.innerHTML=filtered.map(function(g){
+    var key=controlMode==='swipe'?'l-'+g.id:null;
+    return renderGameCard(g,false,key);
+  }).join('');
+
+  if (controlMode==='swipe') {
+    filtered.forEach(function(g){
+      attachSw('l-'+g.id, g.id,
+        function(gid,withExp){toggleInterest(gid);if(withExp)addExplainer(gid);},
+        ignoreGame);
+    });
   }
-  el.innerHTML = filtered.map(function(g){ return renderGameCard(g, false); }).join('');
   updateInboxDot();
   updateEventTitle();
-  if (controlMode === 'swipe') attachSwipeHandlers();
 }
 
-function renderGameCard(g, inInbox) {
-  var me = ME();
-  var amInterested = me && g.interested.indexOf(me) >= 0;
-  var amExplainer = me && g.explainers.indexOf(me) >= 0;
-  var amSupplier = me && g.suppliers.indexOf(me) >= 0;
-  var participants = currentParticipants();
+function renderGameCard(g, inInbox, swipeKey) {
+  var me=ME();
+  var amInterested=me&&g.interested.indexOf(me)>=0;
+  var amExplainer=me&&g.explainers.indexOf(me)>=0;
+  var participants=currentParticipants();
 
-  var tags = '';
-  if (g.complexity) tags += '<span class="tag">⚡ '+g.complexity+'</span>';
-  if (g.players) tags += '<span class="tag">👥 '+g.players+'</span>';
-  if (g.duration) tags += '<span class="tag">⏱ '+g.duration+'min</span>';
-  if (amInterested) tags += '<span class="tag tan">★ Interesse</span>';
-  if (amExplainer) tags += '<span class="tag yellow">📖 Erklärer</span>';
-  if (g.ignored) tags += '<span class="tag" style="opacity:.5">👁‍🗨 Ignoriert</span>';
+  var tags='';
+  if (g.complexity) tags+='<span class="tag">⚡ '+g.complexity+'</span>';
+  if (g.players) tags+='<span class="tag">👥 '+g.players+'</span>';
+  if (g.duration) tags+='<span class="tag">⏱ '+g.duration+'min</span>';
+  if (amInterested) tags+='<span class="tag tan">★ Interesse</span>';
+  if (amExplainer) tags+='<span class="tag yellow">📖 Erklärer</span>';
+  if (g.ignored) tags+='<span class="tag" style="opacity:.5">👁‍🗨 Ignoriert</span>';
 
-  var nameLink = g.bgg ? '<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>' : escHtml(g.name);
+  var nameLink=g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>':escHtml(g.name);
 
-  var btnHtml = '';
-  if (controlMode === 'button') {
-    btnHtml = '<div class="btn-row">';
-    btnHtml += '<button class="btn btn-sm '+(amInterested?'btn-primary':'btn-ghost')+'" onclick="toggleInterest(\''+g.id+'\')">'+( amInterested?'★ Interesse':'☆ Interesse')+'</button>';
-    if (inInbox) {
-      btnHtml += '<button class="btn btn-sm btn-ghost" onclick="ignoreGame(\''+g.id+'\')">Ausblenden</button>';
-    }
-    if (!amExplainer && me) btnHtml += '<button class="btn btn-sm btn-ghost" onclick="addExplainer(\''+g.id+'\')">📖 Ich erkläre</button>';
-    if (amExplainer) btnHtml += '<button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">📖 Nicht mehr</button>';
-    if (g.wish && me && !g.ignored) {
-      btnHtml += '<button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">✓ Wunsch erfüllen</button>';
-    }
-    btnHtml += '</div>';
+  var btnHtml='';
+  if (controlMode==='button') {
+    btnHtml='<div class="btn-row">';
+    btnHtml+='<button class="btn btn-sm '+(amInterested?'btn-primary':'btn-ghost')+'" onclick="toggleInterest(\''+g.id+'\')">'+(amInterested?'★ Interesse':'☆ Interesse')+'</button>';
+    if (inInbox) btnHtml+='<button class="btn btn-sm btn-ghost" onclick="ignoreGame(\''+g.id+'\')">Ausblenden</button>';
+    if (!amExplainer&&me) btnHtml+='<button class="btn btn-sm btn-ghost" onclick="addExplainer(\''+g.id+'\')">📖 Ich erkläre</button>';
+    if (amExplainer) btnHtml+='<button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">📖 Nicht mehr</button>';
+    if (g.wish&&me&&!g.ignored) btnHtml+='<button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">✓ Wunsch erfüllen</button>';
+    btnHtml+='</div>';
   } else {
-    // Swipe mode
-    if (g.wish && me) {
-      btnHtml = '<div class="btn-row"><button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">✓ Wunsch erfüllen</button></div>';
-    }
+    if (g.wish&&me) btnHtml='<div class="btn-row"><button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">✓ Wunsch erfüllen</button></div>';
   }
 
-  // Explainers and suppliers display
-  var infoHtml = '';
-  if (g.explainers.length > 0) {
-    var exNames = g.explainers.map(function(pid){
-      var p = participants.find(function(x){ return x.id===pid; });
-      return p ? p.name : pid;
-    });
-    infoHtml += '<div style="font-size:11px;color:var(--yellow);margin-top:4px">📖 '+exNames.join(', ')+'</div>';
-  } else {
-    if (me && !g.wish) infoHtml += '<div style="font-size:11px;color:var(--muted);margin-top:4px">📖 Kein Erklärer</div>';
+  var infoHtml='';
+  if (g.explainers.length>0) {
+    var exNames=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
+    infoHtml+='<div style="font-size:11px;color:var(--yellow);margin-top:4px">📖 '+exNames.join(', ')+'</div>';
+  } else if (me&&!g.wish) {
+    infoHtml+='<div style="font-size:11px;color:var(--muted);margin-top:4px">📖 Kein Erklärer</div>';
   }
-  if (g.suppliers.length > 0) {
-    var supNames = g.suppliers.map(function(pid){
-      var p = participants.find(function(x){ return x.id===pid; });
-      return p ? p.name : pid;
-    });
-    infoHtml += '<div style="font-size:11px;color:var(--muted);margin-top:2px">🎒 '+supNames.join(', ')+'</div>';
+  if (g.suppliers.length>0) {
+    var supNames=g.suppliers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
+    infoHtml+='<div style="font-size:11px;color:var(--muted);margin-top:2px">🎒 '+supNames.join(', ')+'</div>';
   }
 
-  var swipeActionsHtml = '';
-  if (controlMode === 'swipe') {
-    swipeActionsHtml = '<div class="swipe-actions" style="display:none">' +
-      '<div class="swipe-action ignore" onclick="ignoreGame(\''+g.id+'\')"><span>👁</span>Ignorieren</div>' +
-      '<div class="swipe-action interest" onclick="toggleInterest(\''+g.id+'\')"><span>★</span>Interesse</div>' +
+  var cardInner='<div class="game-card-inner">'+
+    '<div style="font-size:14px;font-weight:600">'+nameLink+'</div>'+
+    '<div class="game-tags">'+tags+'</div>'+
+    infoHtml+btnHtml+
+  '</div>';
+
+  if (controlMode==='swipe'&&swipeKey) {
+    return '<div class="swipe-wrap" style="margin-bottom:10px">'+
+      '<div class="wagon wagon-hide">Ausblenden</div>'+
+      '<div class="wagon wagon-interest" id="wi-'+swipeKey+'">★ Interesse</div>'+
+      '<div class="wagon wagon-explain" id="we-'+swipeKey+'">📖 Erklärbedarf</div>'+
+      '<div class="game-card" id="sc-'+swipeKey+'">'+cardInner+'</div>'+
     '</div>';
   }
-
-  return '<div class="game-card" data-id="'+g.id+'">' +
-    '<div class="game-card-inner">' +
-      '<div style="font-size:14px;font-weight:600">'+nameLink+'</div>' +
-      '<div class="game-tags">'+tags+'</div>' +
-      infoHtml +
-      btnHtml +
-    '</div>' +
-    swipeActionsHtml +
-  '</div>';
-}
-
-function attachSwipeHandlers() {
-  document.querySelectorAll('.game-card').forEach(function(card) {
-    if (card.dataset.swipe) return;
-    card.dataset.swipe = '1';
-    var startX, startY, moving = false;
-    card.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
-    card.addEventListener('touchmove', function(e) {
-      var dx = e.touches[0].clientX - startX;
-      var dy = Math.abs(e.touches[0].clientY - startY);
-      if (dy > 20) return;
-      var inner = card.querySelector('.game-card-inner');
-      if (inner) inner.style.transform = 'translateX('+Math.min(0,dx)+'px)';
-      var actions = card.querySelector('.swipe-actions');
-      if (actions) actions.style.display = dx < -30 ? 'flex' : 'none';
-    }, {passive:true});
-    card.addEventListener('touchend', function(e) {
-      var inner = card.querySelector('.game-card-inner');
-      if (inner) inner.style.transform = '';
-    });
-  });
+  return '<div class="game-card" data-id="'+g.id+'">'+cardInner+'</div>';
 }
 
 // ============================================================
 // GAME ACTIONS
 // ============================================================
-function toggleInterest(gid) {
-  var me = ME();
-  if (!me) return;
-  var g = currentGames().find(function(x){ return x.id===gid; });
-  if (!g) return;
-  var idx = g.interested.indexOf(me);
-  if (idx >= 0) g.interested.splice(idx,1);
-  else g.interested.push(me);
+function toggleInterest(gid){
+  var me=ME();if(!me)return;
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  var idx=g.interested.indexOf(me);
+  if(idx>=0)g.interested.splice(idx,1);else g.interested.push(me);
   renderAll();
 }
-
-function ignoreGame(gid) {
-  var g = currentGames().find(function(x){ return x.id===gid; });
-  if (g) g.ignored = true;
+function ignoreGame(gid){
+  var g=currentGames().find(function(x){return x.id===gid;});
+  if(g)g.ignored=true;
   renderAll();
 }
-
-function addExplainer(gid) {
-  var me = ME();
-  if (!me) return;
-  var g = currentGames().find(function(x){ return x.id===gid; });
-  if (!g) return;
-  if (g.explainers.indexOf(me) < 0) g.explainers.push(me);
-  if (g.interested.indexOf(me) < 0) g.interested.push(me);
+function addExplainer(gid){
+  var me=ME();if(!me)return;
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  if(g.explainers.indexOf(me)<0)g.explainers.push(me);
+  if(g.interested.indexOf(me)<0)g.interested.push(me);
   renderAll();
 }
-
-function removeExplainer(gid) {
-  var me = ME();
-  if (!me) return;
-  var g = currentGames().find(function(x){ return x.id===gid; });
-  if (!g) return;
-  var idx = g.explainers.indexOf(me);
-  if (idx >= 0) g.explainers.splice(idx,1);
+function removeExplainer(gid){
+  var me=ME();if(!me)return;
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  var idx=g.explainers.indexOf(me);if(idx>=0)g.explainers.splice(idx,1);
   renderAll();
 }
-
-function fulfillWish(gid) {
-  var me = ME();
-  if (!me) return;
-  var g = currentGames().find(function(x){ return x.id===gid; });
-  if (!g) return;
-  g.wish = false;
-  if (g.explainers.indexOf(me) < 0) g.explainers.push(me);
-  if (g.suppliers.indexOf(me) < 0) g.suppliers.push(me);
-  if (g.interested.indexOf(me) < 0) g.interested.push(me);
+function fulfillWish(gid){
+  var me=ME();if(!me)return;
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  g.wish=false;
+  if(g.explainers.indexOf(me)<0)g.explainers.push(me);
+  if(g.suppliers.indexOf(me)<0)g.suppliers.push(me);
+  if(g.interested.indexOf(me)<0)g.interested.push(me);
   renderAll();
 }
-
-function showAddGame() { showOverlay('add-game-overlay'); }
-
-function addGame() {
-  var name = document.getElementById('ag-name').value.trim();
-  if (!name) { alert('Name erforderlich'); return; }
-  var me = ME();
-  var evId = currentEventId();
-  if (!evId) return;
-  var isWish = document.getElementById('ag-wish').value === '1';
-  var g = {
-    id: 'g'+Date.now(),
-    name: name,
-    bgg: document.getElementById('ag-bgg').value.trim(),
-    complexity: parseFloat(document.getElementById('ag-complexity').value) || null,
-    players: document.getElementById('ag-players').value.trim(),
-    duration: parseInt(document.getElementById('ag-duration').value) || null,
-    wish: isWish,
-    ignored: false,
-    interested: isWish ? [] : (me ? [me] : []),
-    explainers: [],
-    suppliers: isWish ? [] : (me ? [me] : []),
-    erkTime: parseInt(document.getElementById('ag-duration').value) || 60,
-    ts: Date.now()
-  };
-  if (!eventGames[evId]) eventGames[evId] = [];
+function showAddGame(){showOverlay('add-game-overlay');}
+function addGame(){
+  var name=document.getElementById('ag-name').value.trim();
+  if(!name){alert('Name erforderlich');return;}
+  var me=ME(),evId=currentEventId();if(!evId)return;
+  var isWish=document.getElementById('ag-wish').value==='1';
+  var g={id:'g'+Date.now(),name:name,bgg:document.getElementById('ag-bgg').value.trim(),
+    complexity:parseFloat(document.getElementById('ag-complexity').value)||null,
+    players:document.getElementById('ag-players').value.trim(),
+    duration:parseInt(document.getElementById('ag-duration').value)||null,
+    wish:isWish,ignored:false,
+    interested:isWish?[]:(me?[me]:[]),
+    explainers:[],suppliers:isWish?[]:(me?[me]:[]),
+    erkTime:parseInt(document.getElementById('ag-duration').value)||60,ts:Date.now()};
+  if(!eventGames[evId])eventGames[evId]=[];
   eventGames[evId].push(g);
   closeOverlay('add-game-overlay');
   renderAll();
@@ -1173,42 +999,38 @@ function addGame() {
 // ============================================================
 // INBOX
 // ============================================================
-function renderInbox() {
-  var el = document.getElementById('inbox-list');
-  if (!el) return;
-  var games = getInboxGames();
-  if (games.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Keine neuen Spiele in der Inbox</div>';
-    return;
+function renderInbox(){
+  var el=document.getElementById('inbox-list');if(!el)return;
+  var games=getInboxGames();
+  if(!games.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Keine neuen Spiele in der Inbox</div>';return;}
+  var hint=controlMode==='swipe'?'<div class="swipe-hint">→ Rechts: Interesse | ← Links: Ignorieren</div>':'';
+  el.innerHTML=hint+games.map(function(g){
+    var key=controlMode==='swipe'?'i-'+g.id:null;
+    return renderGameCard(g,true,key);
+  }).join('');
+  if(controlMode==='swipe'){
+    games.forEach(function(g){
+      attachSw('i-'+g.id,g.id,
+        function(gid,withExp){toggleInterest(gid);if(withExp)addExplainer(gid);},
+        ignoreGame);
+    });
   }
-  var hint = controlMode === 'swipe' ? '<div class="swipe-hint">← Swipen: Ignorieren | Interesse →</div>' : '';
-  el.innerHTML = hint + games.map(function(g){ return renderGameCard(g, true); }).join('');
-  if (controlMode === 'swipe') attachSwipeHandlers();
 }
 
 // ============================================================
 // MITSPIELEN
 // ============================================================
-function renderMit() {
-  var el = document.getElementById('mit-list');
-  if (!el) return;
-  var me = ME();
-  var plan = getTimePlan();
-  var games = plan.mitGames;
-  if (games.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele zum Mitspielen</div>';
-    return;
-  }
-  el.innerHTML = games.map(function(g) {
-    var participants = currentParticipants();
-    var names = g.interested.filter(function(pid){ return pid !== me; }).map(function(pid) {
-      var p = participants.find(function(x){ return x.id===pid; });
-      return p ? p.name : pid;
-    });
-    return '<div class="card">' +
-      '<div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>' +
-      '<div class="game-meta">'+(g.duration?'⏱ '+g.duration+'min ':'')+''+(names.length>0?'mit '+names.join(', '):'')+'</div>' +
-      (g.explainers.length > 0 ? '<div style="font-size:11px;color:var(--yellow);margin-top:4px">📖 '+g.explainers.map(function(pid){ var p=participants.find(function(x){return x.id===pid;}); return p?p.name:pid; }).join(', ')+'</div>' : '') +
+function renderMit(){
+  var el=document.getElementById('mit-list');if(!el)return;
+  var plan=getTimePlan(),games=plan.mitGames;
+  if(!games.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele zum Mitspielen</div>';return;}
+  var participants=currentParticipants(),me=ME();
+  el.innerHTML=games.map(function(g){
+    var names=g.interested.filter(function(pid){return pid!==me;}).map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
+    return '<div class="card">'+
+      '<div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>'+
+      '<div class="game-meta">'+(g.duration?'⏱ '+g.duration+'min ':'')+( names.length?'mit '+names.join(', '):'')+'</div>'+
+      (g.explainers.length?'<div style="font-size:11px;color:var(--yellow);margin-top:4px">📖 '+g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;}).join(', ')+'</div>':'')+
     '</div>';
   }).join('');
 }
@@ -1216,28 +1038,17 @@ function renderMit() {
 // ============================================================
 // ERKLÄREN
 // ============================================================
-function renderErk() {
-  var el = document.getElementById('erk-list');
-  if (!el) return;
-  var me = ME();
-  var plan = getTimePlan();
-  var games = plan.erkGames;
-  if (games.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Du erklärst aktuell keine Spiele</div>';
-    return;
-  }
-  el.innerHTML = games.map(function(g) {
-    var participants = currentParticipants();
-    var intNames = g.interested.filter(function(pid){ return pid !== me; }).map(function(pid) {
-      var p = participants.find(function(x){ return x.id===pid; });
-      return p ? p.name : pid;
-    });
-    return '<div class="card">' +
-      '<div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>' +
-      '<div class="game-meta">'+(g.erkTime||g.duration?'⏱ '+(g.erkTime||g.duration)+'min ':'')+(intNames.length>0?'für '+intNames.join(', '):'')+'</div>' +
-      '<div class="btn-row">' +
-        '<button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">Austragen</button>' +
-      '</div>' +
+function renderErk(){
+  var el=document.getElementById('erk-list');if(!el)return;
+  var plan=getTimePlan(),games=plan.erkGames;
+  if(!games.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Du erklärst aktuell keine Spiele</div>';return;}
+  var participants=currentParticipants(),me=ME();
+  el.innerHTML=games.map(function(g){
+    var names=g.interested.filter(function(pid){return pid!==me;}).map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
+    return '<div class="card">'+
+      '<div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>'+
+      '<div class="game-meta">'+(g.erkTime||g.duration?'⏱ '+(g.erkTime||g.duration)+'min ':'')+(names.length?'für '+names.join(', '):'')+'</div>'+
+      '<div class="btn-row"><button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">Austragen</button></div>'+
     '</div>';
   }).join('');
 }
@@ -1245,544 +1056,310 @@ function renderErk() {
 // ============================================================
 // PACKLISTE
 // ============================================================
-function renderPackliste() {
-  var el = document.getElementById('pack-scroll');
-  if (!el) return;
-  var evId = currentEventId();
-  var ev = currentEvent();
-  var me = ME();
-  var items = currentPackItems();
-  var trades = currentTrades();
-  var participants = currentParticipants();
-
-  var html = '';
-
-  // Schedule section
-  html += '<div class="sec-hdr">Meine Anreise</div>';
-  html += renderScheduleSection();
-
-  // Generic checklist
-  if (ev && ev.genericPacklist && ev.genericPacklist.length > 0) {
-    html += '<div class="sec-hdr">Allgemeine Packliste</div><div class="card">';
-    ev.genericPacklist.forEach(function(item, i) {
-      html += '<div class="pack-item" id="gpack-'+i+'"><input type="checkbox" onchange="toggleGenericPack('+i+',this)"><span>'+escHtml(item)+'</span></div>';
-    });
-    html += '</div>';
+function renderPackliste(){
+  var el=document.getElementById('pack-scroll');if(!el)return;
+  var ev=currentEvent(),me=ME(),items=currentPackItems(),trades=currentTrades(),participants=currentParticipants();
+  var html='';
+  html+='<div class="sec-hdr">Meine Anreise</div>'+renderScheduleSection();
+  if(ev&&ev.genericPacklist&&ev.genericPacklist.length){
+    html+='<div class="sec-hdr">Allgemeine Packliste</div><div class="card">';
+    ev.genericPacklist.forEach(function(item,i){html+='<div class="pack-item" id="gpack-'+i+'"><input type="checkbox" onchange="toggleGenericPack('+i+',this)"><span>'+escHtml(item)+'</span></div>';});
+    html+='</div>';
   }
-
-  // My items
-  var myItems = items.filter(function(it){ return it.participantId === me; });
-  html += '<div class="sec-hdr">Meine Mitbringsel</div><div class="card" id="my-items-list">';
-  if (myItems.length === 0) html += '<div style="color:var(--muted);font-size:13px">Noch nichts eingetragen</div>';
-  myItems.forEach(function(it) {
-    html += '<div class="pack-item'+(it.checked?' done':'')+'" id="pki-'+it.id+'">' +
-      '<input type="checkbox"'+(it.checked?' checked':'')+' onchange="togglePackItem(\''+it.id+'\',this)">' +
-      '<span style="flex:1">'+escHtml(it.text)+'</span>' +
-      '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px" onclick="removePackItem(\''+it.id+'\')">✕</button>' +
-    '</div>';
+  var myItems=items.filter(function(it){return it.participantId===me;});
+  html+='<div class="sec-hdr">Meine Mitbringsel</div><div class="card">';
+  if(!myItems.length)html+='<div style="color:var(--muted);font-size:13px">Noch nichts eingetragen</div>';
+  myItems.forEach(function(it){
+    html+='<div class="pack-item'+(it.checked?' done':'')+'" id="pki-'+it.id+'">'+
+      '<input type="checkbox"'+(it.checked?' checked':'')+' onchange="togglePackItem(\''+it.id+'\',this)">'+
+      '<span style="flex:1">'+escHtml(it.text)+'</span>'+
+      '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px" onclick="removePackItem(\''+it.id+'\')">✕</button></div>';
   });
-  html += '<div class="inline-add"><input id="new-pack-item" placeholder="Hinzufügen..."><button class="btn btn-sm btn-primary" onclick="addPackItem()">+</button></div>';
-  html += '</div>';
-
-  // Trades
-  if (trades.length > 0) {
-    html += '<div class="sec-hdr">Handelsbörse</div>';
-    trades.forEach(function(tr) {
-      var fromP = participants.find(function(p){ return p.id===tr.fromId; });
-      var toP = participants.find(function(p){ return p.id===tr.toId; });
-      var fromName = fromP ? fromP.name : tr.fromId;
-      var toName = toP ? toP.name : tr.toId;
-      var iSend = tr.fromId === me;
-      var iReceive = tr.toId === me;
-      html += '<div class="card">';
-      html += '<div style="font-size:13px;font-weight:600;margin-bottom:6px">'+escHtml(tr.item)+'</div>';
-      html += '<div class="trade-direction">';
-      html += '<span style="color:'+(fromP?fromP.color:'var(--muted)')+'">'+fromName+'</span>';
-      html += '<span class="trade-arrow">→</span>';
-      html += '<span style="color:'+(toP?toP.color:'var(--muted)')+'">'+toName+'</span>';
-      html += '</div>';
-      if (iSend) {
-        if (tr.status==='offered') {
-          html += '<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Eingepackt ✓</button>';
-        } else if (tr.status==='packed') {
-          html += '<div style="font-size:12px;color:var(--green)">✓ Eingepackt</div>';
-          html += '<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben ✓</button>';
-        } else {
-          html += '<div style="font-size:12px;color:var(--green)">✓ Abgeschlossen</div>';
-        }
-      } else if (iReceive) {
-        var packStatus = tr.fromPacked ? '<span style="color:var(--green);font-size:12px">✓ Sender hat eingepackt</span>' : '<span style="color:var(--muted);font-size:12px">Noch nicht eingepackt</span>';
-        html += packStatus;
-        if (tr.status==='delivered') {
-          html += ' <button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Erhalten ✓</button>';
-        }
+  html+='<div class="inline-add"><input id="new-pack-item" placeholder="Hinzufügen..."><button class="btn btn-sm btn-primary" onclick="addPackItem()">+</button></div></div>';
+  if(trades.length){
+    html+='<div class="sec-hdr">Handelsbörse</div>';
+    trades.forEach(function(tr){
+      var fromP=participants.find(function(p){return p.id===tr.fromId;}),toP=participants.find(function(p){return p.id===tr.toId;});
+      var fromName=fromP?fromP.name:tr.fromId,toName=toP?toP.name:tr.toId;
+      var iSend=tr.fromId===me,iReceive=tr.toId===me;
+      html+='<div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:6px">'+escHtml(tr.item)+'</div>'+
+        '<div class="trade-direction"><span style="color:'+(fromP?fromP.color:'var(--muted)')+'">'+fromName+'</span><span class="trade-arrow">→</span><span style="color:'+(toP?toP.color:'var(--muted)')+'">'+toName+'</span></div>';
+      if(iSend){
+        if(tr.status==='offered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Eingepackt ✓</button>';
+        else if(tr.status==='packed')html+='<div style="font-size:12px;color:var(--green)">✓ Eingepackt</div><button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben ✓</button>';
+        else html+='<div style="font-size:12px;color:var(--green)">✓ Abgeschlossen</div>';
+      }else if(iReceive){
+        html+=(tr.fromPacked?'<span style="color:var(--green);font-size:12px">✓ Sender hat eingepackt</span>':'<span style="color:var(--muted);font-size:12px">Noch nicht eingepackt</span>');
+        if(tr.status==='delivered')html+=' <button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Erhalten ✓</button>';
       }
-      html += '<button class="btn btn-sm btn-ghost" style="margin-top:6px;display:block" onclick="editTradePartner(\''+tr.id+'\')">Partner bearbeiten</button>';
-      html += '</div>';
+      html+='<button class="btn btn-sm btn-ghost" style="margin-top:6px;display:block" onclick="editTradePartner(\''+tr.id+'\')">Partner bearbeiten</button></div>';
     });
   }
-
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
-function renderScheduleSection() {
-  var evId = currentEventId();
-  var ev = currentEvent();
-  var sched = mySchedule();
-  if (!ev) return '<div style="color:var(--muted);font-size:13px">Kein Event aktiv</div>';
-
-  if (sched && sched.saved) {
-    return '<div class="sched-display">' +
-      '<div class="sched-row"><span class="sched-label">Anreise</span><span>'+sched.arrivalDate+' '+sched.arrivalTime+'</span></div>' +
-      '<div class="sched-row"><span class="sched-label">Abreise</span><span>'+sched.departureDate+' '+sched.departureTime+'</span></div>' +
-      '<div class="sched-row"><span class="sched-label">Schlaf</span><span>'+sched.sleepStart+' – '+sched.sleepEnd+' Uhr</span></div>' +
-      '<button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="editSchedule()">Bearbeiten</button>' +
-    '</div>';
+function renderScheduleSection(){
+  var ev=currentEvent(),sched=mySchedule();
+  if(!ev)return '<div style="color:var(--muted);font-size:13px">Kein Event aktiv</div>';
+  if(sched&&sched.saved){
+    return '<div class="sched-display">'+
+      '<div class="sched-row"><span class="sched-label">Anreise</span><span>'+sched.arrivalDate+' '+sched.arrivalTime+'</span></div>'+
+      '<div class="sched-row"><span class="sched-label">Abreise</span><span>'+sched.departureDate+' '+sched.departureTime+'</span></div>'+
+      '<div class="sched-row"><span class="sched-label">Schlaf</span><span>'+sched.sleepStart+' – '+sched.sleepEnd+' Uhr</span></div>'+
+      '<button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="editSchedule()">Bearbeiten</button></div>';
   }
-
-  // Form with event defaults
-  var arr = sched ? sched.arrivalDate : ev.arrivalDate;
-  var arrt = sched ? sched.arrivalTime : ev.arrivalTime;
-  var dep = sched ? sched.departureDate : ev.departureDate;
-  var dept = sched ? sched.departureTime : ev.departureTime;
-  var ss = sched ? (sched.sleepStart||'02:00') : '02:00';
-  var se = sched ? (sched.sleepEnd||'09:00') : '09:00';
-
-  return '<div class="card">' +
-    '<label>Anreisedatum</label><input id="sched-arr-date" type="date" value="'+arr+'">' +
-    '<label>Anreisezeit</label><input id="sched-arr-time" type="time" value="'+arrt+'">' +
-    '<label>Abreisedatum</label><input id="sched-dep-date" type="date" value="'+dep+'">' +
-    '<label>Abreisezeit</label><input id="sched-dep-time" type="time" value="'+dept+'">' +
-    '<label>Schlaf von</label><input id="sched-sleep-start" type="time" value="'+ss+'">' +
-    '<label>Schlaf bis</label><input id="sched-sleep-end" type="time" value="'+se+'">' +
-    '<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveSchedule()">Speichern</button>' +
-  '</div>';
+  var arr=sched?sched.arrivalDate:ev.arrivalDate,arrt=sched?sched.arrivalTime:ev.arrivalTime;
+  var dep=sched?sched.departureDate:ev.departureDate,dept=sched?sched.departureTime:ev.departureTime;
+  var ss=sched?(sched.sleepStart||'02:00'):'02:00',se=sched?(sched.sleepEnd||'09:00'):'09:00';
+  return '<div class="card">'+
+    '<label>Anreisedatum</label><input id="sched-arr-date" type="date" value="'+arr+'">'+
+    '<label>Anreisezeit</label><input id="sched-arr-time" type="time" value="'+arrt+'">'+
+    '<label>Abreisedatum</label><input id="sched-dep-date" type="date" value="'+dep+'">'+
+    '<label>Abreisezeit</label><input id="sched-dep-time" type="time" value="'+dept+'">'+
+    '<label>Schlaf von</label><input id="sched-sleep-start" type="time" value="'+ss+'">'+
+    '<label>Schlaf bis</label><input id="sched-sleep-end" type="time" value="'+se+'">'+
+    '<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveSchedule()">Speichern</button></div>';
 }
 
-function saveSchedule() {
-  var evId = currentEventId();
-  if (!evId) return;
-  if (!userSchedules[currentUserId]) userSchedules[currentUserId] = {};
-  userSchedules[currentUserId][evId] = {
-    arrivalDate: document.getElementById('sched-arr-date').value,
-    arrivalTime: document.getElementById('sched-arr-time').value,
-    departureDate: document.getElementById('sched-dep-date').value,
-    departureTime: document.getElementById('sched-dep-time').value,
-    sleepStart: document.getElementById('sched-sleep-start').value,
-    sleepEnd: document.getElementById('sched-sleep-end').value,
-    saved: true
-  };
+function saveSchedule(){
+  var evId=currentEventId();if(!evId)return;
+  if(!userSchedules[currentUserId])userSchedules[currentUserId]={};
+  userSchedules[currentUserId][evId]={
+    arrivalDate:document.getElementById('sched-arr-date').value,
+    arrivalTime:document.getElementById('sched-arr-time').value,
+    departureDate:document.getElementById('sched-dep-date').value,
+    departureTime:document.getElementById('sched-dep-time').value,
+    sleepStart:document.getElementById('sched-sleep-start').value,
+    sleepEnd:document.getElementById('sched-sleep-end').value,saved:true};
   renderPackliste();
-  // Re-render time bars
-  renderUnifiedTimeBar('inbox-timebar');
-  renderUnifiedTimeBar('mit-timebar');
-  renderUnifiedTimeBar('erk-timebar');
+  renderUnifiedTimeBar('inbox-timebar');renderUnifiedTimeBar('mit-timebar');renderUnifiedTimeBar('erk-timebar');
 }
-
-function editSchedule() {
-  var evId = currentEventId();
-  if (!evId || !userSchedules[currentUserId] || !userSchedules[currentUserId][evId]) return;
-  userSchedules[currentUserId][evId].saved = false;
-  renderPackliste();
+function editSchedule(){
+  var evId=currentEventId();if(!evId||!userSchedules[currentUserId]||!userSchedules[currentUserId][evId])return;
+  userSchedules[currentUserId][evId].saved=false;renderPackliste();
 }
-
-function togglePackItem(id, cb) {
-  var evId = currentEventId();
-  var item = (eventPackItems[evId]||[]).find(function(x){ return x.id===id; });
-  if (item) item.checked = cb.checked;
-  var row = document.getElementById('pki-'+id);
-  if (row) row.className = 'pack-item'+(cb.checked?' done':'');
+function togglePackItem(id,cb){
+  var evId=currentEventId();
+  var item=(eventPackItems[evId]||[]).find(function(x){return x.id===id;});
+  if(item)item.checked=cb.checked;
+  var row=document.getElementById('pki-'+id);
+  if(row)row.className='pack-item'+(cb.checked?' done':'');
 }
-
-function toggleGenericPack(i, cb) {
-  var row = document.getElementById('gpack-'+i);
-  if (row) row.className = 'pack-item'+(cb.checked?' done':'');
+function toggleGenericPack(i,cb){var row=document.getElementById('gpack-'+i);if(row)row.className='pack-item'+(cb.checked?' done':'');}
+function addPackItem(){
+  var inp=document.getElementById('new-pack-item');if(!inp)return;
+  var text=inp.value.trim();if(!text)return;
+  var evId=currentEventId(),me=ME();if(!evId||!me)return;
+  if(!eventPackItems[evId])eventPackItems[evId]=[];
+  eventPackItems[evId].push({id:'pk'+Date.now(),participantId:me,text:text,type:'personal',checked:false});
+  inp.value='';renderPackliste();
 }
-
-function addPackItem() {
-  var inp = document.getElementById('new-pack-item');
-  if (!inp) return;
-  var text = inp.value.trim();
-  if (!text) return;
-  var evId = currentEventId();
-  var me = ME();
-  if (!evId || !me) return;
-  if (!eventPackItems[evId]) eventPackItems[evId] = [];
-  eventPackItems[evId].push({id:'pk'+Date.now(), participantId:me, text:text, type:'personal', checked:false});
-  inp.value = '';
+function removePackItem(id){
+  var evId=currentEventId();if(!eventPackItems[evId])return;
+  eventPackItems[evId]=eventPackItems[evId].filter(function(x){return x.id!==id;});
   renderPackliste();
 }
-
-function removePackItem(id) {
-  var evId = currentEventId();
-  if (!eventPackItems[evId]) return;
-  eventPackItems[evId] = eventPackItems[evId].filter(function(x){ return x.id!==id; });
+function advanceTrade(id){
+  var evId=currentEventId(),trades=eventTrades[evId]||[],tr=trades.find(function(x){return x.id===id;});if(!tr)return;
+  if(tr.status==='offered'){tr.status='packed';tr.fromPacked=true;}
+  else if(tr.status==='packed'){tr.status='delivered';}
+  else if(tr.status==='delivered'){tr.status='done';tr.toPacked=true;}
   renderPackliste();
 }
-
-function advanceTrade(id) {
-  var evId = currentEventId();
-  var trades = eventTrades[evId] || [];
-  var tr = trades.find(function(x){ return x.id===id; });
-  if (!tr) return;
-  if (tr.status==='offered') { tr.status='packed'; tr.fromPacked=true; }
-  else if (tr.status==='packed') { tr.status='delivered'; }
-  else if (tr.status==='delivered') { tr.status='done'; tr.toPacked=true; }
-  renderPackliste();
-}
-
-function editTradePartner(id) {
-  var newPartner = prompt('Neuer Handelspartner (Name):');
-  if (!newPartner) return;
-  var evId = currentEventId();
-  var trades = eventTrades[evId] || [];
-  var tr = trades.find(function(x){ return x.id===id; });
-  if (!tr) return;
-  var me = ME();
-  var participants = currentParticipants();
-  var found = participants.find(function(p){ return p.name.toLowerCase()===newPartner.toLowerCase(); });
-  if (tr.fromId === me) tr.toId = found ? found.id : newPartner;
-  else tr.fromId = found ? found.id : newPartner;
+function editTradePartner(id){
+  var newP=prompt('Neuer Handelspartner (Name):');if(!newP)return;
+  var evId=currentEventId(),trades=eventTrades[evId]||[],tr=trades.find(function(x){return x.id===id;});if(!tr)return;
+  var me=ME(),participants=currentParticipants();
+  var found=participants.find(function(p){return p.name.toLowerCase()===newP.toLowerCase();});
+  if(tr.fromId===me)tr.toId=found?found.id:newP;else tr.fromId=found?found.id:newP;
   renderPackliste();
 }
 
 // ============================================================
 // BUFFET
 // ============================================================
-function renderBuffet() {
-  var el = document.getElementById('buffet-list');
-  if (!el) return;
-  var ev = currentEvent();
-  if (!ev || !ev.hasBuffet) {
-    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Kein Buffet für dieses Event</div>';
-    return;
+function renderBuffet(){
+  var el=document.getElementById('buffet-list');if(!el)return;
+  var ev=currentEvent();
+  if(!ev||!ev.hasBuffet){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Kein Buffet für dieses Event</div>';return;}
+  var items=currentPackItems(),participants=currentParticipants(),games=currentGames();
+  var foodItems=items.filter(function(it){return it.type==='food';});
+  var gameItems=games.filter(function(g){return !g.wish&&g.suppliers.length>0;});
+  var html='';
+  if(foodItems.length){
+    html+='<div class="sec-hdr">Essen & Trinken</div>';
+    var byP={};
+    foodItems.forEach(function(it){if(!byP[it.participantId])byP[it.participantId]=[];byP[it.participantId].push(it);});
+    Object.keys(byP).forEach(function(pid){
+      var p=participants.find(function(x){return x.id===pid;});
+      html+='<div class="card"><div style="font-size:13px;font-weight:600;color:var(--tan);margin-bottom:6px">'+escHtml(p?p.name:pid)+'</div>';
+      byP[pid].forEach(function(it){html+='<div style="font-size:13px;padding:3px 0;color:'+(it.checked?'var(--muted)':'var(--text)')+'">'+escHtml(it.text)+'</div>';});
+      html+='</div>';
+    });
   }
-  var items = currentPackItems();
-  var participants = currentParticipants();
-  var foodItems = items.filter(function(it){ return it.type==='food'; });
-  var games = currentGames();
-  var gameItems = games.filter(function(g){ return !g.wish && g.suppliers.length > 0; });
-
-  var html = '';
-  if (foodItems.length === 0 && gameItems.length === 0) {
-    html = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Noch keine Einträge</div>';
-  } else {
-    if (foodItems.length > 0) {
-      html += '<div class="sec-hdr">Essen & Trinken</div>';
-      var byPerson = {};
-      foodItems.forEach(function(it) {
-        if (!byPerson[it.participantId]) byPerson[it.participantId] = [];
-        byPerson[it.participantId].push(it);
-      });
-      Object.keys(byPerson).forEach(function(pid) {
-        var p = participants.find(function(x){ return x.id===pid; });
-        var pName = p ? p.name : pid;
-        html += '<div class="card"><div style="font-size:13px;font-weight:600;color:var(--tan);margin-bottom:6px">'+escHtml(pName)+'</div>';
-        byPerson[pid].forEach(function(it) {
-          html += '<div style="font-size:13px;padding:3px 0;color:'+(it.checked?'var(--muted)':'var(--text)')+'">'+escHtml(it.text)+'</div>';
-        });
-        html += '</div>';
-      });
-    }
-    if (gameItems.length > 0) {
-      html += '<div class="sec-hdr">Spiele (Mitbringer)</div>';
-      gameItems.forEach(function(g) {
-        var supNames = g.suppliers.map(function(pid){
-          var p = participants.find(function(x){ return x.id===pid; });
-          return p ? p.name : pid;
-        });
-        html += '<div class="card">' +
-          '<div style="font-size:13px;font-weight:600">'+escHtml(g.name)+'</div>' +
-          '<div style="font-size:11px;color:var(--muted)">🎒 '+supNames.join(', ')+'</div>' +
-        '</div>';
-      });
-    }
+  if(gameItems.length){
+    html+='<div class="sec-hdr">Spiele (Mitbringer)</div>';
+    gameItems.forEach(function(g){
+      var supNames=g.suppliers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
+      html+='<div class="card"><div style="font-size:13px;font-weight:600">'+escHtml(g.name)+'</div><div style="font-size:11px;color:var(--muted)">🎒 '+supNames.join(', ')+'</div></div>';
+    });
   }
-  el.innerHTML = html;
+  if(!html)html='<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Noch keine Einträge</div>';
+  el.innerHTML=html;
 }
 
 // ============================================================
 // ADMIN
 // ============================================================
-function renderAdmin() {
-  var el = document.getElementById('admin-scroll');
-  if (!el) return;
-  if (!adminUnlocked) {
-    el.innerHTML = '<div class="card" style="text-align:center;padding:30px">' +
-      '<div style="font-size:40px;margin-bottom:10px">🔒</div>' +
-      '<div style="color:var(--muted);margin-bottom:16px">Admin-PIN eingeben</div>' +
-      '<input id="admin-pin-input" type="password" placeholder="PIN" style="text-align:center;letter-spacing:4px;font-size:20px;max-width:200px;margin:0 auto;display:block">' +
-      '<button class="btn btn-primary" style="margin-top:12px" onclick="checkAdminPin()">Entsperren</button>' +
-    '</div>';
+function renderAdmin(){
+  var el=document.getElementById('admin-scroll');if(!el)return;
+  if(!adminUnlocked){
+    el.innerHTML='<div class="card" style="text-align:center;padding:30px">'+
+      '<div style="font-size:40px;margin-bottom:10px">🔒</div>'+
+      '<div style="color:var(--muted);margin-bottom:16px">Admin-PIN eingeben</div>'+
+      '<input id="admin-pin-input" type="password" placeholder="PIN" style="text-align:center;letter-spacing:4px;font-size:20px;max-width:200px;margin:0 auto;display:block">'+
+      '<button class="btn btn-primary" style="margin-top:12px" onclick="checkAdminPin()">Entsperren</button></div>';
     return;
   }
-  var ev = currentEvent();
-  var html = '<div class="admin-tabs">' +
-    '<button class="admin-tab'+(adminTab==='event'?' active':'')+'" onclick="setAdminTab(\'event\')">Event</button>' +
-    '<button class="admin-tab'+(adminTab==='banners'?' active':'')+'" onclick="setAdminTab(\'banners\')">Nachrichten</button>' +
-    '<button class="admin-tab'+(adminTab==='polls'?' active':'')+'" onclick="setAdminTab(\'polls\')">Umfragen</button>' +
-    '<button class="admin-tab'+(adminTab==='vp'?' active':'')+'" onclick="setAdminTab(\'vp\')">Fiktive Nutzer</button>' +
-  '</div>';
-
-  if (adminTab === 'event') {
-    html += renderAdminEventTab(ev);
-  } else if (adminTab === 'banners') {
-    html += renderAdminBannersTab(ev);
-  } else if (adminTab === 'polls') {
-    html += renderAdminPollsTab(ev);
-  } else if (adminTab === 'vp') {
-    html += renderAdminVpTab(ev);
-  }
-
-  el.innerHTML = html;
+  var ev=currentEvent();
+  el.innerHTML='<div class="admin-tabs">'+
+    ['event','banners','polls','vp'].map(function(t){
+      var labels={event:'Event',banners:'Nachrichten',polls:'Umfragen',vp:'Fiktive Nutzer'};
+      return '<button class="admin-tab'+(adminTab===t?' active':'')+'" onclick="setAdminTab(\''+t+'\')">'+labels[t]+'</button>';
+    }).join('')+'</div>'+
+    (adminTab==='event'?renderAdminEventTab(ev):adminTab==='banners'?renderAdminBannersTab(ev):adminTab==='polls'?renderAdminPollsTab(ev):renderAdminVpTab(ev));
 }
 
-function setAdminTab(tab) { adminTab = tab; renderAdmin(); }
+function setAdminTab(tab){adminTab=tab;renderAdmin();}
 
-function renderAdminEventTab(ev) {
-  if (!ev) return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
-  var evId = ev.id;
-  var payments = eventPayments[evId] || {};
-  var participants = currentParticipants();
-
-  var html = '<div class="admin-section"><h3>Steuerung</h3>' +
-    '<div class="toggle-row"><span style="font-size:13px;color:var(--text)">Button-Modus</span>' +
-      '<label class="toggle-switch"><input type="checkbox"'+(controlMode==='button'?' checked':'')+' onchange="controlMode=this.checked?\'button\':\'swipe\';renderAll()"><span class="toggle-slider"></span></label>' +
-    '</div>' +
-  '</div>';
-
-  html += '<div class="admin-section"><h3>Buffet</h3>' +
-    '<div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span>' +
-      '<label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="toggleBuffet(\''+evId+'\',this.checked)"><span class="toggle-slider"></span></label>' +
-    '</div>' +
-  '</div>';
-
-  html += '<div class="admin-section"><h3>Zahlung</h3>' +
-    '<label>Betrag</label><input id="pay-amount" value="'+(ev.payAmount||'35€')+'">' +
-    '<label>PayPal-Link</label><input id="pay-link" value="'+(ev.paypalLink||'')+'">' +
-    '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="savePaySettings()">Speichern</button>' +
-    '<div class="sec-hdr" style="margin-top:12px">Zahlungsstatus</div>';
-  participants.forEach(function(p) {
-    var paid = payments[p.id] || false;
-    html += '<div class="participant-row">' +
-      '<div class="p-avatar" style="background:'+p.color+'22;color:'+p.color+'">'+p.name.slice(0,2).toUpperCase()+'</div>' +
-      '<div style="flex:1;font-size:13px;color:var(--text)">'+escHtml(p.name)+'</div>' +
-      '<button class="btn btn-sm '+(paid?'btn-primary':'btn-ghost')+'" onclick="togglePayment(\''+evId+'\',\''+p.id+'\')">'+(paid?'✓ Bezahlt':'Nicht bezahlt')+'</button>' +
-    '</div>';
-  });
-  html += '</div>';
-
-  return html;
+function renderAdminEventTab(ev){
+  if(!ev)return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
+  var evId=ev.id,payments=eventPayments[evId]||{},participants=currentParticipants();
+  return '<div class="admin-section"><h3>Steuerung</h3>'+
+    '<div class="toggle-row"><span style="font-size:13px;color:var(--text)">Button-Modus</span>'+
+      '<label class="toggle-switch"><input type="checkbox"'+(controlMode==='button'?' checked':'')+' onchange="controlMode=this.checked?\'button\':\'swipe\';renderAll()"><span class="toggle-slider"></span></label></div></div>'+
+    '<div class="admin-section"><h3>Buffet</h3>'+
+      '<div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span>'+
+        '<label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="toggleBuffet(\''+evId+'\',this.checked)"><span class="toggle-slider"></span></label></div></div>'+
+    '<div class="admin-section"><h3>Zahlung</h3>'+
+      '<label>Betrag</label><input id="pay-amount" value="'+(ev.payAmount||'35€')+'">'+
+      '<label>PayPal-Link</label><input id="pay-link" value="'+(ev.paypalLink||'')+'">'+
+      '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="savePaySettings()">Speichern</button>'+
+      '<div class="sec-hdr" style="margin-top:12px">Zahlungsstatus</div>'+
+      participants.map(function(p){
+        return '<div class="participant-row">'+
+          '<div class="p-avatar" style="background:'+p.color+'22;color:'+p.color+'">'+p.name.slice(0,2).toUpperCase()+'</div>'+
+          '<div style="flex:1;font-size:13px;color:var(--text)">'+escHtml(p.name)+'</div>'+
+          '<button class="btn btn-sm '+((payments[p.id])?'btn-primary':'btn-ghost')+'" onclick="togglePayment(\''+evId+'\',\''+p.id+'\')">'+(payments[p.id]?'✓ Bezahlt':'Nicht bezahlt')+'</button></div>';
+      }).join('')+'</div>';
 }
 
-function renderAdminBannersTab(ev) {
-  if (!ev) return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
-  var evId = ev.id;
-  var totalUsers = (userMemberships ? Object.keys(userMemberships).filter(function(uid){ return (userMemberships[uid]||[]).indexOf(evId) >= 0; }).length : 1) || 1;
-  var evBanners = banners.filter(function(b){ return b.eventId === evId && !b.deleted; });
-
-  var html = '<div class="admin-section"><h3>Neue Nachricht</h3>' +
-    '<label>Text</label><textarea id="banner-text" rows="3" placeholder="Wichtige Nachricht..."></textarea>' +
-    '<label>Anzeigedatum</label>' +
-    '<div class="trigger-row">' +
-      '<button class="trigger-opt'+(adminBannerTrigger==='date'?' active':'')+'" onclick="adminBannerTrigger=\'date\';renderAdmin()">Festes Datum</button>' +
-      '<button class="trigger-opt'+(adminBannerTrigger==='daysbefore'?' active':'')+'" onclick="adminBannerTrigger=\'daysbefore\';renderAdmin()">X Tage vor Event</button>' +
-    '</div>' +
-    (adminBannerTrigger==='date' ?
-      '<input id="banner-date" type="date" style="margin-top:8px">' :
-      '<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><input id="banner-days" type="number" min="1" max="365" placeholder="30" style="width:80px"><span style="color:var(--muted);font-size:13px">Tage vor Anreise</span></div>'
-    ) +
-    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createBanner()">Banner erstellen</button>' +
-  '</div>';
-
-  if (evBanners.length > 0) {
-    html += '<div class="admin-section"><h3>Aktive Banner</h3>';
-    evBanners.forEach(function(b) {
-      var readCount = b.readBy.length;
-      var triggerInfo = b.triggerType==='date' ? ('ab '+b.triggerDate) : ('ab '+b.daysBefore+' Tage vor Event');
-      html += '<div style="padding:8px 0;border-bottom:1px solid #333">' +
-        '<div style="font-size:13px;color:var(--text);margin-bottom:4px">'+escHtml(b.text)+'</div>' +
-        '<div style="font-size:11px;color:var(--muted)">'+triggerInfo+' · Gelesen: '+readCount+'/'+totalUsers+'</div>' +
-        '<button class="btn btn-sm btn-danger" style="margin-top:6px" onclick="deleteBanner(\''+b.id+'\')">Löschen</button>' +
-      '</div>';
-    });
-    html += '</div>';
-  }
-  return html;
+function renderAdminBannersTab(ev){
+  if(!ev)return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
+  var evId=ev.id;
+  var totalUsers=Object.keys(userMemberships).filter(function(uid){return(userMemberships[uid]||[]).indexOf(evId)>=0;}).length||1;
+  var evBanners=banners.filter(function(b){return b.eventId===evId&&!b.deleted;});
+  return '<div class="admin-section"><h3>Neue Nachricht</h3>'+
+    '<label>Text</label><textarea id="banner-text" rows="3" placeholder="Wichtige Nachricht..."></textarea>'+
+    '<label>Anzeigedatum</label>'+
+    '<div class="trigger-row">'+
+      '<button class="trigger-opt'+(adminBannerTrigger==='date'?' active':'')+'" onclick="adminBannerTrigger=\'date\';renderAdmin()">Festes Datum</button>'+
+      '<button class="trigger-opt'+(adminBannerTrigger==='daysbefore'?' active':'')+'" onclick="adminBannerTrigger=\'daysbefore\';renderAdmin()">X Tage vor Event</button></div>'+
+    (adminBannerTrigger==='date'?'<input id="banner-date" type="date" style="margin-top:8px">':
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><input id="banner-days" type="number" min="1" max="365" placeholder="30" style="width:80px"><span style="color:var(--muted);font-size:13px">Tage vor Anreise</span></div>')+
+    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createBanner()">Banner erstellen</button></div>'+
+    (evBanners.length?'<div class="admin-section"><h3>Aktive Banner</h3>'+
+      evBanners.map(function(b){
+        var trigInfo=b.triggerType==='date'?('ab '+b.triggerDate):('ab '+b.daysBefore+' Tage vor Event');
+        return '<div style="padding:8px 0;border-bottom:1px solid #333">'+
+          '<div style="font-size:13px;color:var(--text);margin-bottom:4px">'+escHtml(b.text)+'</div>'+
+          '<div style="font-size:11px;color:var(--muted)">'+trigInfo+' · Gelesen: '+b.readBy.length+'/'+totalUsers+'</div>'+
+          '<button class="btn btn-sm btn-danger" style="margin-top:6px" onclick="deleteBanner(\''+b.id+'\')">Löschen</button></div>';
+      }).join('')+'</div>':'');
 }
 
-function renderAdminPollsTab(ev) {
-  if (!ev) return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
-  var evId = ev.id;
-  var evPolls = polls.filter(function(p){ return p.eventId === evId; });
-
-  var html = '<div class="admin-section"><h3>Neue Umfrage</h3>' +
-    '<label>Frage</label><input id="poll-question" placeholder="Welche Pizza?">' +
-    '<label>Optionen (min. 2)</label>' +
-    '<input id="poll-opt-0" placeholder="Option 1" style="margin-bottom:6px">' +
-    '<input id="poll-opt-1" placeholder="Option 2" style="margin-bottom:6px">' +
-    '<input id="poll-opt-2" placeholder="Option 3 (optional)" style="margin-bottom:6px">' +
-    '<input id="poll-opt-3" placeholder="Option 4 (optional)">' +
-    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createPoll()">Umfrage erstellen</button>' +
-  '</div>';
-
-  if (evPolls.length > 0) {
-    html += '<div class="admin-section"><h3>Umfragen</h3>';
-    evPolls.forEach(function(p) {
-      var totalVotes = Object.keys(p.votes).length;
-      html += '<div style="padding:8px 0;border-bottom:1px solid #333">' +
-        '<div style="font-size:13px;font-weight:600;color:var(--text)">'+escHtml(p.question)+'</div>';
-      p.options.forEach(function(opt, i) {
-        var cnt = Object.values(p.votes).filter(function(v){ return v===i; }).length;
-        var pct = totalVotes > 0 ? Math.round(cnt/totalVotes*100) : 0;
-        html += '<div style="font-size:12px;color:var(--muted);margin-top:3px">'+escHtml(opt)+': '+cnt+' ('+pct+'%)</div>';
-      });
-      html += '<div style="font-size:11px;color:var(--muted);margin-top:4px">'+totalVotes+' Stimme'+(totalVotes!==1?'n':'')+'</div>' +
-        '<button class="btn btn-sm btn-danger" style="margin-top:6px" onclick="deletePoll(\''+p.id+'\')">Löschen</button>' +
-      '</div>';
-    });
-    html += '</div>';
-  }
-  return html;
+function renderAdminPollsTab(ev){
+  if(!ev)return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
+  var evId=ev.id,evPolls=polls.filter(function(p){return p.eventId===evId;});
+  return '<div class="admin-section"><h3>Neue Umfrage</h3>'+
+    '<label>Frage</label><input id="poll-question" placeholder="Welche Pizza?">'+
+    '<label>Optionen (min. 2)</label>'+
+    [0,1,2,3].map(function(i){return '<input id="poll-opt-'+i+'" placeholder="Option '+(i+1)+(i>1?' (optional)':'')+'" style="margin-bottom:6px">';}).join('')+
+    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createPoll()">Umfrage erstellen</button></div>'+
+    (evPolls.length?'<div class="admin-section"><h3>Umfragen</h3>'+
+      evPolls.map(function(p){
+        var total=Object.keys(p.votes).length;
+        return '<div style="padding:8px 0;border-bottom:1px solid #333">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--text)">'+escHtml(p.question)+'</div>'+
+          p.options.map(function(opt,i){var cnt=Object.values(p.votes).filter(function(v){return v===i;}).length;return '<div style="font-size:12px;color:var(--muted);margin-top:3px">'+escHtml(opt)+': '+cnt+' ('+(total>0?Math.round(cnt/total*100):0)+'%)</div>';}).join('')+
+          '<div style="font-size:11px;color:var(--muted);margin-top:4px">'+total+' Stimme'+(total!==1?'n':'')+'</div>'+
+          '<button class="btn btn-sm btn-danger" style="margin-top:6px" onclick="deletePoll(\''+p.id+'\')">Löschen</button></div>';
+      }).join('')+'</div>':'');
 }
 
-function renderAdminVpTab(ev) {
-  if (!ev) return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
-  var evId = ev.id;
-  var evVps = virtualParticipants.filter(function(v){ return v.eventId === evId; });
-
-  var html = '<div class="admin-section"><h3>Fiktiven Nutzer anlegen</h3>' +
-    '<label>Name</label><input id="vp-name" placeholder="Max Mustermann">' +
-    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createVirtualParticipant()">Anlegen</button>' +
-  '</div>';
-
-  if (evVps.length > 0) {
-    html += '<div class="admin-section"><h3>Fiktive Nutzer</h3>';
-    evVps.forEach(function(vp) {
-      html += '<div class="participant-row">' +
-        '<div class="p-avatar" style="background:#33333377;color:var(--muted)">'+vp.name.slice(0,2).toUpperCase()+'</div>' +
-        '<div style="flex:1">' +
-          '<div style="font-size:13px;color:var(--text)">'+escHtml(vp.name)+'</div>' +
-          '<div style="font-size:11px;color:var(--muted)">Code: <span class="vp-code">'+vp.code+'</span> · '+(vp.linkedUserId?'Verknüpft':'Noch frei')+'</div>' +
-        '</div>' +
-      '</div>';
-    });
-    html += '</div>';
-  }
-  return html;
+function renderAdminVpTab(ev){
+  if(!ev)return '<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
+  var evId=ev.id,evVps=virtualParticipants.filter(function(v){return v.eventId===evId;});
+  return '<div class="admin-section"><h3>Fiktiven Nutzer anlegen</h3>'+
+    '<label>Name</label><input id="vp-name" placeholder="Max Mustermann">'+
+    '<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createVirtualParticipant()">Anlegen</button></div>'+
+    (evVps.length?'<div class="admin-section"><h3>Fiktive Nutzer</h3>'+
+      evVps.map(function(vp){
+        return '<div class="participant-row">'+
+          '<div class="p-avatar" style="background:#33333377;color:var(--muted)">'+vp.name.slice(0,2).toUpperCase()+'</div>'+
+          '<div style="flex:1"><div style="font-size:13px;color:var(--text)">'+escHtml(vp.name)+'</div>'+
+          '<div style="font-size:11px;color:var(--muted)">Code: <span class="vp-code">'+vp.code+'</span> · '+(vp.linkedUserId?'Verknüpft':'Noch frei')+'</div></div></div>';
+      }).join('')+'</div>':'');
 }
 
-function checkAdminPin() {
-  var pin = document.getElementById('admin-pin-input').value;
-  if (pin === '1234') { adminUnlocked = true; renderAdmin(); }
-  else { alert('Falscher PIN'); }
-}
+function checkAdminPin(){var pin=document.getElementById('admin-pin-input').value;if(pin==='1234'){adminUnlocked=true;renderAdmin();}else alert('Falscher PIN');}
+function toggleBuffet(evId,val){var ev=allEvents.find(function(e){return e.id===evId;});if(ev)ev.hasBuffet=val;}
+function savePaySettings(){var ev=currentEvent();if(!ev)return;var a=document.getElementById('pay-amount'),l=document.getElementById('pay-link');if(a)ev.payAmount=a.value.trim();if(l)ev.paypalLink=l.value.trim();renderAdmin();}
+function togglePayment(evId,pid){if(!eventPayments[evId])eventPayments[evId]={};eventPayments[evId][pid]=!eventPayments[evId][pid];renderAdmin();renderPaypalBanner();}
 
-function toggleBuffet(evId, val) {
-  var ev = allEvents.find(function(e){ return e.id===evId; });
-  if (ev) ev.hasBuffet = val;
+function createBanner(){
+  var text=document.getElementById('banner-text').value.trim();if(!text){alert('Text erforderlich');return;}
+  var evId=currentEventId();if(!evId)return;
+  var b={id:'bn'+(nextBannerId++),eventId:evId,text:text,readBy:[],deleted:false};
+  if(adminBannerTrigger==='date'){var d=document.getElementById('banner-date').value;if(!d){alert('Datum erforderlich');return;}b.triggerType='date';b.triggerDate=d;}
+  else{var days=parseInt(document.getElementById('banner-days').value);if(!days||days<1){alert('Tage erforderlich');return;}b.triggerType='daysbefore';b.daysBefore=days;}
+  banners.push(b);renderAdmin();
 }
+function deleteBanner(id){var b=banners.find(function(x){return x.id===id;});if(b)b.deleted=true;renderAdmin();renderBanners();}
 
-function savePaySettings() {
-  var ev = currentEvent();
-  if (!ev) return;
-  var amt = document.getElementById('pay-amount');
-  var lnk = document.getElementById('pay-link');
-  if (amt) ev.payAmount = amt.value.trim();
-  if (lnk) ev.paypalLink = lnk.value.trim();
+function createPoll(){
+  var q=document.getElementById('poll-question').value.trim();if(!q){alert('Frage erforderlich');return;}
+  var opts=[];for(var i=0;i<4;i++){var el=document.getElementById('poll-opt-'+i);if(el&&el.value.trim())opts.push(el.value.trim());}
+  if(opts.length<2){alert('Mindestens 2 Optionen');return;}
+  polls.push({id:'pl'+(nextPollId++),eventId:currentEventId(),question:q,options:opts,votes:{}});
   renderAdmin();
 }
+function deletePoll(id){polls=polls.filter(function(x){return x.id!==id;});renderAdmin();renderPolls();}
 
-function togglePayment(evId, pid) {
-  if (!eventPayments[evId]) eventPayments[evId] = {};
-  eventPayments[evId][pid] = !eventPayments[evId][pid];
-  renderAdmin();
-  renderPaypalBanner();
-}
-
-function createBanner() {
-  var text = document.getElementById('banner-text').value.trim();
-  if (!text) { alert('Text erforderlich'); return; }
-  var evId = currentEventId();
-  if (!evId) return;
-  var b = {id:'bn'+(nextBannerId++), eventId:evId, text:text, readBy:[], deleted:false};
-  if (adminBannerTrigger === 'date') {
-    var d = document.getElementById('banner-date').value;
-    if (!d) { alert('Datum erforderlich'); return; }
-    b.triggerType = 'date';
-    b.triggerDate = d;
-  } else {
-    var days = parseInt(document.getElementById('banner-days').value);
-    if (!days || days < 1) { alert('Anzahl Tage erforderlich'); return; }
-    b.triggerType = 'daysbefore';
-    b.daysBefore = days;
-  }
-  banners.push(b);
-  renderAdmin();
-}
-
-function deleteBanner(id) {
-  var b = banners.find(function(x){ return x.id===id; });
-  if (b) b.deleted = true;
-  renderAdmin();
-  renderBanners();
-}
-
-function createPoll() {
-  var q = document.getElementById('poll-question').value.trim();
-  if (!q) { alert('Frage erforderlich'); return; }
-  var opts = [];
-  for (var i=0; i<4; i++) {
-    var el = document.getElementById('poll-opt-'+i);
-    if (el && el.value.trim()) opts.push(el.value.trim());
-  }
-  if (opts.length < 2) { alert('Mindestens 2 Optionen'); return; }
-  var evId = currentEventId();
-  polls.push({id:'pl'+(nextPollId++), eventId:evId, question:q, options:opts, votes:{}});
-  renderAdmin();
-}
-
-function deletePoll(id) {
-  polls = polls.filter(function(x){ return x.id!==id; });
-  renderAdmin();
-  renderPolls();
-}
-
-function createVirtualParticipant() {
-  var name = document.getElementById('vp-name').value.trim();
-  if (!name) { alert('Name erforderlich'); return; }
-  var evId = currentEventId();
-  if (!evId) return;
-  var code = 'VP-'+name.slice(0,3).toUpperCase()+(Math.floor(Math.random()*900)+100);
-  var id = 'vp'+(nextVpId++);
-  var vp = {id:id, name:name, code:code, eventId:evId, linkedUserId:null};
-  virtualParticipants.push(vp);
-  if (!eventParticipants[evId]) eventParticipants[evId] = [];
-  eventParticipants[evId].push({id:id, name:name, color:'#666666'});
+function createVirtualParticipant(){
+  var name=document.getElementById('vp-name').value.trim();if(!name){alert('Name erforderlich');return;}
+  var evId=currentEventId();if(!evId)return;
+  var code='VP-'+name.slice(0,3).toUpperCase()+(Math.floor(Math.random()*900)+100);
+  var id='vp'+(nextVpId++);
+  virtualParticipants.push({id:id,name:name,code:code,eventId:evId,linkedUserId:null});
+  if(!eventParticipants[evId])eventParticipants[evId]=[];
+  eventParticipants[evId].push({id:id,name:name,color:'#666666'});
   renderAdmin();
 }
 
 // ============================================================
 // UTILS
 // ============================================================
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function escHtml(str){if(!str)return '';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ============================================================
 // INIT
 // ============================================================
-function init() {
+function init(){
   updateAvatars();
-  var mems = userMemberships[currentUserId] || [];
-  if (mems.length === 0) {
-    showJoinScreen();
-  } else {
-    showScreen('list');
-  }
+  if((userMemberships[currentUserId]||[]).length===0)showJoinScreen();
+  else showScreen('list');
 }
-
 init();
 </script>
 </body>

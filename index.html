@@ -26,7 +26,7 @@ body{background:#111;display:flex;justify-content:center;align-items:flex-start;
 input,select,textarea{background:#333;border:1px solid #444;color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--tan)}
 label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-top:10px}
-.bottom-nav{display:flex;background:var(--surface);border-top:1px solid #333;flex-shrink:0}
+.bottom-nav{display:flex;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;gap:3px;position:relative}
 .nav-btn svg{opacity:.6}
 .nav-btn.active{color:var(--tan)}
@@ -141,6 +141,29 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <body>
 <div id="app">
 
+<!-- TOP NAV -->
+<div class="bottom-nav" id="bottom-nav">
+  <button class="nav-btn active" id="nav-list" onclick="showScreen('list')">
+    <span id="ni-list"></span>Spiele
+  </button>
+  <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')">
+    <span id="ni-inbox"></span>Inbox
+    <span class="nav-dot" id="inbox-dot" style="display:none"></span>
+  </button>
+  <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')">
+    <span id="ni-mit"></span>Mitspielen
+  </button>
+  <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')">
+    <span id="ni-erk"></span>Erklären
+  </button>
+  <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')">
+    <span id="ni-pack"></span>Packliste
+  </button>
+  <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')">
+    <span id="ni-buffet"></span>Buffet
+  </button>
+</div>
+
 <!-- JOIN SCREEN -->
 <div class="join-screen" id="join-screen" style="display:none">
   <h2>Willkommen</h2>
@@ -238,7 +261,8 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
       <option value="players">Spielerzahl</option>
       <option value="duration">Spielzeit</option>
     </select>
-    <button class="icon-btn" id="eye-btn" onclick="toggleIgnored()" title="Ignorierte ein-/ausblenden" style="color:var(--tan)" id="eye-btn-icon"></button>
+    <button class="icon-btn" id="eye-btn" onclick="toggleIgnored()" title="Ignorierte ein-/ausblenden" style="color:var(--tan)"></button>
+    <button class="icon-btn" id="mode-toggle-btn" onclick="toggleControlMode()" title="Steuerungsmodus wechseln" style="color:var(--muted)"></button>
   </div>
   <div class="scroll-area" id="game-list-scroll">
     <div id="game-list"></div>
@@ -316,28 +340,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="scroll-area" id="admin-scroll"></div>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav" id="bottom-nav">
-  <button class="nav-btn active" id="nav-list" onclick="showScreen('list')">
-    <span id="ni-list"></span>Spiele
-  </button>
-  <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')">
-    <span id="ni-inbox"></span>Inbox
-    <span class="nav-dot" id="inbox-dot" style="display:none"></span>
-  </button>
-  <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')">
-    <span id="ni-mit"></span>Mitspielen
-  </button>
-  <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')">
-    <span id="ni-erk"></span>Erklären
-  </button>
-  <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')">
-    <span id="ni-pack"></span>Packliste
-  </button>
-  <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')">
-    <span id="ni-buffet"></span>Buffet
-  </button>
-</div>
 
 </div>
 <script>
@@ -383,7 +385,22 @@ function initIcons(){
   var ba=ICO.back;
   var bel=document.getElementById('back-admin');if(bel)bel.innerHTML=ba;
   var eyeEl=document.getElementById('eye-btn');if(eyeEl)eyeEl.innerHTML=ICO.eye;
+  updateModeBtn();
 }
+function updateModeBtn(){
+  var btn=document.getElementById('mode-toggle-btn');
+  if(!btn)return;
+  if(controlMode==='swipe'){
+    btn.innerHTML=ic('<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="17" cy="12" r="3" fill="currentColor" stroke="none"/>');
+    btn.style.color='var(--tan)';
+    btn.title='Swipe-Modus aktiv';
+  }else{
+    btn.innerHTML=ic('<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="7" cy="12" r="3" fill="currentColor" stroke="none"/>');
+    btn.style.color='var(--muted)';
+    btn.title='Button-Modus aktiv';
+  }
+}
+function toggleControlMode(){controlMode=(controlMode==='button')?'swipe':'button';updateModeBtn();renderAll();}
 
 // ============================================================
 // STATE
@@ -981,9 +998,7 @@ function setAdminTab(tab){adminTab=tab;renderAdmin();}
 function renderAdminEventTab(ev){
   if(!ev)return'<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
   var evId=ev.id,payments=eventPayments[evId]||{},participants=currentParticipants();
-  return'<div class="admin-section"><h3>Steuerung</h3>'+
-    '<div class="toggle-row"><span style="font-size:13px;color:var(--text)">Button-Modus</span><label class="toggle-switch"><input type="checkbox"'+(controlMode==='button'?' checked':'')+' onchange="controlMode=this.checked?\'button\':\'swipe\';renderAll()"><span class="toggle-slider"></span></label></div></div>'+
-    '<div class="admin-section"><h3>Buffet</h3><div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span><label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="allEvents.find(function(e){return e.id===\''+evId+'\';}).hasBuffet=this.checked"><span class="toggle-slider"></span></label></div></div>'+
+  return'<div class="admin-section"><h3>Buffet</h3><div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span><label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="allEvents.find(function(e){return e.id===\''+evId+'\';}).hasBuffet=this.checked"><span class="toggle-slider"></span></label></div></div>'+
     '<div class="admin-section"><h3>Zahlung</h3>'+
     '<label>Betrag</label><input id="pay-amount" value="'+(ev.payAmount||'35€')+'">'+
     '<label>PayPal-Link</label><input id="pay-link" value="'+(ev.paypalLink||'')+'">'+

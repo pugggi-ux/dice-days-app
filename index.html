@@ -50,12 +50,12 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .detail-link-btn{flex:1;padding:8px 12px;border-radius:10px;border:1px solid #444;color:var(--muted);background:none;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
 .role-columns{display:flex;gap:16px;margin-bottom:16px}
 .role-col{flex:1}
-.role-col-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.role-col-header{display:flex;align-items:center;gap:6px;margin-bottom:8px;justify-content:space-between}
 .role-col-title{font-size:14px;font-weight:700}
 .role-add{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--tan);color:var(--tan);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;background:none}
 .role-chips{display:flex;flex-wrap:wrap;gap:5px}
 .quick-role-btn{margin-top:8px;padding:7px 0;border-radius:10px;border:1.5px solid var(--tan);color:var(--tan);background:rgba(184,160,130,.15);font-size:12px;font-weight:700;cursor:pointer;width:100%;text-align:center;transition:background .15s}.quick-role-btn:active{background:rgba(184,160,130,.3)}
-.role-add-sel{margin-top:8px;width:100%;background:var(--surface);border:1.5px solid #444;color:var(--text);border-radius:10px;padding:7px 10px;font-size:12px;cursor:pointer}
+.role-add-inline{margin-left:auto;background:rgba(184,160,130,.15);border:1.5px solid var(--tan);color:var(--tan);border-radius:8px;padding:2px 6px;font-size:12px;font-weight:700;cursor:pointer;max-width:28px;transition:max-width .2s ease;overflow:hidden}.role-add-inline:focus{max-width:160px}
 .chip{display:inline-flex;align-items:center;gap:3px;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:600}
 .chip-exp{background:rgba(212,160,23,.28);color:#f0c040;border:1px solid rgba(212,160,23,.4)}
 .chip-sup{background:rgba(212,160,23,.22);color:#e8b830;border:1px solid rgba(212,160,23,.35)}
@@ -63,7 +63,7 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .chip-me-exp{background:rgba(212,160,23,.45);color:#ffd04a;border:1px solid rgba(212,160,23,.65)}
 .chip-me{background:rgba(212,160,23,.32);color:#f0c040;border:1px solid rgba(212,160,23,.5)}
 .interest-section{margin-bottom:16px}
-.interest-header{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.interest-header{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;justify-content:space-between}
 .interest-chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip-interest{background:rgba(90,158,111,.22);color:#6fd68a;border:1px solid rgba(90,158,111,.35)}
 .chip-interest-me{background:rgba(90,158,111,.38);color:#7fe89a;border:1px solid rgba(90,158,111,.55)}
@@ -1209,28 +1209,31 @@ function renderDetail(g){
       (bggId?'<button class="detail-link-btn" onclick="window.open(\'https://bgstats.app/game/'+bggId+'\',\'_blank\')">&#128202; BGStats</button>':'')+
       '</div>';
   }
-  // participant picker helper
-  function pickerHtml(role,selfBtn,selfFn){
+  // inline + picker select for a role (placed in the section header)
+  function inlinePicker(role,gid){
     var notIn=participants.filter(function(p){return g[role].indexOf(p.id)<0;});
-    var opts=notIn.map(function(p){return'<option value="'+p.id+'">'+escHtml(p.name)+'</option>';}).join('');
-    var pickerId='add-'+role+'-'+g.id;
-    return (selfBtn&&notIn.find(function(p){return p.id===me;})
-      ?'<button class="quick-role-btn" onclick="'+selfFn+'">'+selfBtn+'</button>':'')+
-      (notIn.length?'<select class="role-add-sel" onchange="if(this.value){quickAddRoleFor(\''+g.id+'\',\''+role+'\',this.value);this.value=\'\';}"><option value="">+ hinzufügen</option>'+opts+'</select>':'');
+    if(!notIn.length)return'';
+    // put self first if applicable
+    var meObj=notIn.find(function(p){return p.id===me;});
+    var rest=notIn.filter(function(p){return p.id!==me;});
+    var ordered=meObj?[meObj].concat(rest):rest;
+    var opts=ordered.map(function(p){
+      var label=p.id===me?'Ich'+ (role==='explainers'?' erkläre':role==='suppliers'?' bringe mit':' bin dabei'):escHtml(p.name);
+      return'<option value="'+p.id+'">'+label+'</option>';
+    }).join('');
+    return'<select class="role-add-inline" onchange="if(this.value){quickAddRoleFor(\''+gid+'\',\''+role+'\',this.value);this.value=\'\';}"><option value="">+</option>'+opts+'</select>';
   }
   // explainer chips
   var ec=g.explainers.map(function(p){
     var cls=p===me?'chip chip-me-exp':'chip chip-exp';
     return'<span class="'+cls+'">'+(p===me?'Du':pName(p))+'<span class="chip-rm" onclick="removeRole(\''+g.id+'\',\'explainers\',\''+p+'\')">&#x2715;</span></span>';
   }).join('');
-  var expControls=pickerHtml('explainers',!amExp?'Ich erkläre':null,'quickAddRole(\''+g.id+'\',\'explainers\')');
   // supplier chips
   var sc=g.suppliers.map(function(p){
     var cls=p===me?'chip chip-me':'chip chip-sup';
     return'<span class="'+cls+'">'+(p===me?'Du':pName(p))+'<span class="chip-rm" onclick="removeRole(\''+g.id+'\',\'suppliers\',\''+p+'\')">&#x2715;</span></span>';
   }).join('');
-  var supControls=pickerHtml('suppliers',!amSup?'Ich bringe mit':null,'quickAddRole(\''+g.id+'\',\'suppliers\')');
-  // interest chips + add picker
+  // interest chips
   var intChips=g.interested.map(function(pid){
     var isMe=pid===me;var isExp=g.explainers.indexOf(pid)>=0;
     var cls=isMe?(isExp?'chip chip-interest-me-exp':'chip chip-interest-me'):'chip chip-interest';
@@ -1238,20 +1241,17 @@ function renderDetail(g){
     var rm=isMe?'<span class="chip-rm" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))" >&#x2715;</span>':'';
     return'<span class="'+cls+'">'+escHtml(nm)+rm+'</span>';
   }).join('');
-  var intNotIn=participants.filter(function(p){return g.interested.indexOf(p.id)<0;});
-  var intPickerOpts=intNotIn.map(function(p){return'<option value="'+p.id+'">'+escHtml(p.name)+'</option>';}).join('');
-  var intControls=intNotIn.length?'<select class="role-add-sel" onchange="if(this.value){quickAddRoleFor(\''+g.id+'\',\'interested\',this.value);this.value=\'\';}"><option value="">+ hinzufügen</option>'+intPickerOpts+'</select>':'';
   // description
   var descHtml=g.desc?'<div class="detail-desc">'+escHtml(g.desc)+'</div>':'';
   var el=document.getElementById('detail-content');if(!el)return;
   el.innerHTML=
-    '<div class="detail-title-row"><span class="detail-title">'+escHtml(g.name)+'</span>'+ssSVG(ratio,28)+'</div>'+
+    '<div class="detail-title-row"><span class="detail-title">'+escHtml(g.name)+'</span><span style="margin-left:auto;flex-shrink:0">'+ssSVG(ratio,22)+'</span></div>'+
     metaHtml+statusHtml+descHtml+linksHtml+
     '<div class="role-columns">'+
-      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Erkl&#228;rer</span></div><div class="role-chips">'+ec+'</div>'+expControls+'</div>'+
-      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Lieferant</span></div><div class="role-chips">'+sc+'</div>'+supControls+'</div>'+
+      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Erkl&#228;rer</span>'+inlinePicker('explainers',g.id)+'</div><div class="role-chips">'+ec+'</div></div>'+
+      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Lieferant</span>'+inlinePicker('suppliers',g.id)+'</div><div class="role-chips">'+sc+'</div></div>'+
     '</div>'+
-    '<div class="interest-section"><div class="interest-header">Interessenten <span style="color:var(--muted);font-size:12px;font-weight:400">'+intCount+'</span></div><div class="interest-chips">'+intChips+'</div>'+intControls+'</div>';
+    '<div class="interest-section"><div class="interest-header"><span>Interessenten</span><span style="color:var(--muted);font-size:12px;font-weight:400">'+intCount+'</span>'+inlinePicker('interested',g.id)+'</div><div class="interest-chips">'+intChips+'</div></div>';
   // action bar
   var actEl=document.getElementById('detail-actions');if(!actEl)return;
   var btns='';

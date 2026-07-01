@@ -310,7 +310,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: SPIELE -->
 <div class="screen" id="screen-list">
   <div class="app-bar" id="appbar-list">
-    <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days</button>
+    <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days 11</button>
     <span id="event-code-badge" style="font-size:11px;font-weight:700;background:var(--card);border:1px solid #444;border-radius:6px;padding:3px 8px;color:var(--muted);letter-spacing:1px"></span>
     <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300">+</button>
     <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
@@ -669,10 +669,9 @@ function renderAll(){var cur=document.querySelector('.screen.active');showScreen
 function updateEventTitle(){
   var ev=currentEvent(),btn=document.getElementById('event-title-btn');if(!btn)return;
   var mems=userMemberships[currentUserId]||[];
-  var dot=getInboxGames().length>0?' ●':'';
-  btn.textContent=(ev?ev.name:'Kein Event')+(mems.length>1?' ▾':'')+dot;
-  if(dot)btn.style.color='var(--red)';else btn.style.color='var(--tan)';
-  var badge=document.getElementById('event-code-badge');if(badge)badge.textContent=ev?ev.code:'';
+  btn.textContent='Dice Days 11'+(mems.length>1?' ▾':'');
+  btn.style.color='var(--tan)';
+  var badge=document.getElementById('event-code-badge');if(badge)badge.textContent='';
 }
 function toggleEventDropdown(){
   var mems=userMemberships[currentUserId]||[];if(mems.length<=1)return;

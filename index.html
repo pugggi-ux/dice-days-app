@@ -536,12 +536,12 @@ var allEvents = [
 ];
 var eventGames = {
   'ev1':[
-    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
-    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
-    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
-    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004,desc:'Für genau zwei Spieler: Tetris-artiges Quilt-Puzzle, bei dem man Knöpfe sammelt und sein Flickentuch bestmöglich befüllt.'},
-    {id:'g5',name:'Gloomhaven',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005},
-    {id:'g6',name:'Azul',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006},
+    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
+    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
+    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,interaction:'semi',wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
+    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004,desc:'Für genau zwei Spieler: Tetris-artiges Quilt-Puzzle, bei dem man Knöpfe sammelt und sein Flickentuch bestmöglich befüllt.'},
+    {id:'g5',name:'Gloomhaven',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,interaction:'koop',wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005,desc:'Dungeon-Crawler Kampagne für 1–4 Spieler. Kooperativer Nahkampf, Charakterentwicklung und über 90 Szenarien.'},
+    {id:'g6',name:'Azul',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006,desc:'Abstraktes Strategiespiel: Fliesen wählen, Muster legen, Punkte maximieren. Einfache Regeln, tiefe Taktik.'},
   ],
   'ev2':[]
 };
@@ -1116,6 +1116,8 @@ function renderGameCard(g,inInbox,swipeKey){
   }
   if(g.ignored)tags+='<span class="tag" style="opacity:.5">Ignoriert</span>';
   if(g.wish)tags+='<span class="tag tan">Wunsch</span>';
+  if(g.interaction==='koop')tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green);font-weight:700">Koop</span>';
+  else if(g.interaction==='semi')tags+='<span class="tag" style="background:rgba(212,160,23,.18);color:var(--yellow);font-weight:700">Semi-Koop</span>';
   // right ring: interested / sweetspot (fallback: max players)
   var maxP=parseInt((g.players||'').split('-').pop())||4;
   var sweetspot=g.sweetspot||maxP;
@@ -1227,7 +1229,10 @@ function renderDetail(g){
   if(g.sweetspot)metaParts.push('Best: '+g.sweetspot);
   if(g.duration)metaParts.push(g.duration+' Min');
   if(g.complexity)metaParts.push('Gewicht '+g.complexity);
-  var metaHtml=metaParts.length?'<div class="detail-meta">'+metaParts.join(' · ')+'</div>':'';
+  var intLabel=g.interaction==='koop'?'Kooperativ':g.interaction==='semi'?'Semi-Kooperativ':g.interaction==='komp'?'Kompetitiv':'';
+  var intColor=g.interaction==='koop'?'var(--green)':g.interaction==='semi'?'var(--yellow)':'var(--muted)';
+  var intHtml=intLabel?'<span style="color:'+intColor+';font-size:12px;font-weight:700">'+intLabel+'</span>':'';
+  var metaHtml=(metaParts.length||intHtml)?'<div class="detail-meta" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">'+metaParts.join(' · ')+(metaParts.length&&intHtml?' · ':'')+intHtml+'</div>':'';
   // links
   var linksHtml='';
   if(g.bgg){
@@ -1359,6 +1364,8 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
   if(g.players)tags+='<span class="tag">'+g.players+' Sp.</span>';
   if(g.duration)tags+='<span class="tag">'+g.duration+' Min</span>';
   if(g.complexity)tags+='<span class="tag">'+g.complexity+'</span>';
+  if(g.interaction==='koop')tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green);font-weight:700">Koop</span>';
+  else if(g.interaction==='semi')tags+='<span class="tag" style="background:rgba(212,160,23,.18);color:var(--yellow);font-weight:700">Semi-Koop</span>';
   tags+=extraTags;
   var bggImg=g.bgg?g.bgg.replace(/.*boardgame\/(\d+).*/,'https://cf.geekdo-images.com/thumb/img/$1'):'';
   var imgHtml='';
@@ -1654,6 +1661,12 @@ function init(){
   updateAvatars();
   if((userMemberships[currentUserId]||[]).length===0)showJoinScreen();
   else showScreen('list');
+  // auto-fetch covers + sweet spots + German names for demo games
+  setTimeout(function(){
+    var evId=currentEventId();if(!evId)return;
+    var ids=(eventGames[evId]||[]).filter(function(g){return g.bgg&&(!g.img||!g.sweetspot);}).map(function(g){var m=g.bgg.match(/boardgame\/(\d+)/);return m?m[1]:null;}).filter(Boolean);
+    if(ids.length)fetchSweetSpots(ids,evId,null);
+  },800);
 }
 init();
 </script>

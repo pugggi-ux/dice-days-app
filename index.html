@@ -1430,14 +1430,18 @@ function renderPackliste(){
   var evId=currentEventId();
   var mySupplierGames=(eventGames[evId]||[]).filter(function(g){return me&&g.suppliers&&g.suppliers.indexOf(me)>=0;});
   if(mySupplierGames.length){
-    html+='<div class="sec-hdr">Spiele die ich mitbringe</div>';
+    html+='<div class="sec-hdr">Spiele die ich mitbringe</div><div class="card">';
     mySupplierGames.forEach(function(g){
       var ratio=g.sweetspot?g.interested.length/g.sweetspot:0;
-      html+='<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer" onclick="openDetail(\''+g.id+'\',\'pack\')">'+
-        '<div style="flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(gameName(g))+'</div>'+
-        ssSVG(ratio,26)+
+      var packed=!!g.supplierPacked;
+      html+='<div class="pack-item'+(packed?' done':'')+'" style="align-items:center">'+
+        '<input type="checkbox"'+(packed?' checked':'')+' onchange="var g=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g){g.supplierPacked=this.checked;renderPackliste();}">'+
+        '<span style="flex:1;cursor:pointer;'+(packed?'text-decoration:line-through;color:var(--muted)':'')+'" onclick="openDetail(\''+g.id+'\',\'pack\')">'+escHtml(gameName(g))+'</span>'+
+        ssSVG(ratio,22)+
+        '<button style="background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;margin-left:4px" title="Nicht mehr mitbringen" onclick="removeRole(\''+g.id+'\',\'suppliers\',\''+me+'\');renderPackliste();">'+ic('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',14)+'</button>'+
       '</div>';
     });
+    html+='</div>';
   }
   var myItems=items.filter(function(it){return it.participantId===me;});
   var visItems=hideDonePackItems?myItems.filter(function(it){return!it.checked;}):myItems;

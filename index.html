@@ -13,8 +13,10 @@ body{background:#111;display:flex;justify-content:center;align-items:flex-start;
 body.light{background:#ccc}
 .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
 .screen.active{display:flex}
-.app-bar{display:flex;align-items:center;padding:12px 16px;background:var(--surface);border-bottom:1px solid #333;gap:8px;flex-shrink:0;position:relative}
-.app-bar-title{font-size:17px;font-weight:700;color:var(--tan);flex:1;cursor:pointer;user-select:none;background:none;border:none;text-align:left;padding:0}
+.app-bar{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #333;gap:8px;flex-shrink:0;position:relative;overflow:hidden;background:var(--surface)}
+.app-bar-title{font-size:17px;font-weight:700;color:var(--tan);flex:1;cursor:pointer;user-select:none;background:none;border:none;text-align:left;padding:0;position:relative;z-index:1}
+.app-bar>.icon-btn,.app-bar>.avatar-btn,.app-bar>#event-code-badge{position:relative;z-index:1}
+#app-bar-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;opacity:.35}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;line-height:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px}
 .icon-btn:hover{background:#333}
 .scroll-area{flex:1;overflow-y:auto;padding:12px;min-height:0}
@@ -191,9 +193,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 .trigger-row{display:flex;gap:8px;margin-top:8px}
 .trigger-opt{flex:1;padding:8px;border-radius:8px;border:1px solid #444;background:none;color:var(--muted);font-size:12px;cursor:pointer;text-align:center}
 .trigger-opt.active{border-color:var(--tan);color:var(--tan)}
-#app-banner{width:100%;background:#1a1a1a;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-#app-banner img{width:100%;max-height:70px;object-fit:cover;object-position:center}
-#app-banner .banner-svg{padding:8px 0}
+#app-banner{display:none}
 #toast{position:absolute;bottom:16px;left:12px;right:12px;background:#3a3a3a;color:var(--text);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;z-index:1000;transform:translateY(100px);transition:transform .25s ease;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 #toast.show{transform:translateY(0);pointer-events:auto}
 .toast-undo{background:none;border:none;color:var(--tan);font-size:13px;font-weight:700;cursor:pointer;padding:0;flex-shrink:0}
@@ -336,7 +336,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: SPIELE -->
 <div class="screen" id="screen-list">
   <div class="app-bar" id="appbar-list">
-    <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <span id="event-code-badge" style="font-size:11px;font-weight:700;background:var(--card);border:1px solid #444;border-radius:6px;padding:3px 8px;color:var(--muted);letter-spacing:1px"></span>
     <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300">+</button>
     <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
@@ -377,7 +377,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: INBOX -->
 <div class="screen" id="screen-inbox">
   <div class="app-bar">
-    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-inbox"></button>
     <button class="avatar-btn" id="avatar-inbox" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -390,7 +390,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: MITSPIELEN -->
 <div class="screen" id="screen-mit">
   <div class="app-bar">
-    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-mit"></button>
     <button class="avatar-btn" id="avatar-mit" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -403,7 +403,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: ERKLÄREN -->
 <div class="screen" id="screen-erk">
   <div class="app-bar">
-    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-erk"></button>
     <button class="avatar-btn" id="avatar-erk" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -416,7 +416,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: PACKLISTE -->
 <div class="screen" id="screen-pack">
   <div class="app-bar">
-    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-pack"></button>
     <button class="avatar-btn" id="avatar-pack" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -426,7 +426,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: BUFFET -->
 <div class="screen" id="screen-buffet">
   <div class="app-bar">
-    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-buffet"></button>
     <button class="avatar-btn" id="avatar-buffet" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -706,13 +706,20 @@ function renderAll(){var cur=document.querySelector('.screen.active');showScreen
 // APP BANNER
 // ============================================================
 function renderAppBanner(){
-  var el=document.getElementById('app-banner');if(!el)return;
   var ev=currentEvent();
-  if(ev&&ev.bannerUrl){
-    el.innerHTML='<img src="'+escHtml(ev.bannerUrl)+'" onerror="this.style.display=\'none\'" alt="">';
-  }else{
-    el.innerHTML='<div class="banner-svg"><svg viewBox="0 0 400 80" height="50" xmlns="http://www.w3.org/2000/svg"><text x="10" y="62" font-family="Arial Black,sans-serif" font-weight="900" font-size="72" fill="#e0e0e0" opacity="0.3">DiCE</text><text x="198" y="62" font-family="Arial Black,sans-serif" font-weight="900" font-size="72" fill="#B8A082">DAYS</text></svg></div>';
-  }
+  var url=ev&&ev.bannerUrl?ev.bannerUrl:'';
+  document.querySelectorAll('.app-bar').forEach(function(bar){
+    var old=bar.querySelector('#app-bar-bg');
+    if(old)old.remove();
+    if(url){
+      var img=document.createElement('img');
+      img.id='app-bar-bg';
+      img.src=url;
+      img.alt='';
+      img.onerror=function(){this.remove();};
+      bar.insertBefore(img,bar.firstChild);
+    }
+  });
 }
 
 // ============================================================
@@ -721,7 +728,9 @@ function renderAppBanner(){
 function updateEventTitle(){
   var ev=currentEvent(),btn=document.getElementById('event-title-btn');if(!btn)return;
   var mems=userMemberships[currentUserId]||[];
-  btn.textContent='Dice Days 11 ▾';
+  var name=ev?ev.name||'DD 11':'DD 11';
+  var short=name.replace(/[a-z\s]/g,'').slice(0,6)||name.slice(0,6);
+  btn.textContent=short+' ▾';
   btn.style.color='var(--tan)';
   var badge=document.getElementById('event-code-badge');if(badge)badge.textContent='';
 }

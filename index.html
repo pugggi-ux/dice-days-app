@@ -1268,7 +1268,7 @@ function renderDetail(g){
       var label=p.id===me?('Ich'+(role==='explainers'?' erkläre':role==='suppliers'?' bringe mit':' bin dabei')):escHtml(p.name);
       return'<option value="'+p.id+'">'+label+'</option>';
     }).join('');
-    return'<button class="role-add-circle" onclick="var s=document.getElementById(\''+selId+'\');s.style.display=s.style.display===\'none\'?\'inline-block\':\'none\';if(s.style.display!==\'none\')s.focus()">+</button>'+
+    return'<button class="role-add-circle" onclick="var s=document.getElementById(\''+selId+'\');s.style.display=\'inline-block\';s.focus();try{s.showPicker();}catch(e){}">+</button>'+
       '<select id="'+selId+'" style="display:none;margin-left:4px;background:var(--surface);border:1px solid #555;color:var(--text);border-radius:8px;padding:3px 6px;font-size:12px" onchange="if(this.value){quickAddRoleFor(\''+gid+'\',\''+role+'\',this.value);this.value=\'\';this.style.display=\'none\';}"><option value="">— wählen —</option>'+opts+'</select>';
   }
   // explainer chips

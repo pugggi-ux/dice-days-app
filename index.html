@@ -604,15 +604,7 @@ var allEvents = [
   {id:'ev2',name:'Dice Days 11',code:'KXMP7Q',password:'1234',arrivalDate:'2024-07-19',arrivalTime:'15:00',departureDate:'2024-07-21',departureTime:'12:00',genericPacklist:['Hausschuhe','Snacks & Getränke'],hasBuffet:false,payAmount:'30€',paypalLink:'https://paypal.me/demo'},
 ];
 var eventGames = {
-  'ev1':[
-    {id:'g1',name:'Twilight Imperium 4',nameDe:'Twilight Imperium: Vierte Edition',img:'https://m.media-amazon.com/images/I/71E6iBwlq+L._AC_SL1000_.jpg',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
-    {id:'g2',name:'Wingspan',nameDe:'Flügelschlag',img:'https://m.media-amazon.com/images/I/815tajlaaNL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
-    {id:'g3',name:'Dune: Imperium',nameDe:'Dune: Imperium',img:'https://www.system-matters.de/wp-content/uploads/Spiel-44-1.png',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,interaction:'semi',wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
-    {id:'g4',name:'Patchwork',nameDe:'Patchwork',img:'https://images.thalia.media/00/-/9efb2afe43454fa1af963d130baf897a/patchwork.png',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004,desc:'Für genau zwei Spieler: Tetris-artiges Quilt-Puzzle, bei dem man Knöpfe sammelt und sein Flickentuch bestmöglich befüllt.'},
-    {id:'g5',name:'Gloomhaven',nameDe:'Gloomhaven',img:'https://m.media-amazon.com/images/I/810dAsU62LL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,interaction:'koop',wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005,desc:'Dungeon-Crawler Kampagne für 1–4 Spieler. Kooperativer Nahkampf, Charakterentwicklung und über 90 Szenarien.'},
-    {id:'g6',name:'Azul',nameDe:'Azul',img:'https://images.thalia.media/00/-/05ff119cff3a47198f035bb80ce896e3/azul.jpeg',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006,desc:'Abstraktes Strategiespiel: Fliesen wählen, Muster legen, Punkte maximieren. Einfache Regeln, tiefe Taktik.'},
-    {id:'g7',name:'Catan',nameDe:'Die Siedler von Catan',img:'https://cdn02.plentymarkets.com/bhgfynjpsi8e/item/images/589342/middle/589342-1741002023.jpeg',bgg:'https://boardgamegeek.com/boardgame/13',complexity:2.3,players:'3–4',sweetspot:1,duration:90,interaction:'semi',wish:false,ignored:false,interested:['p-me','p2','p3','p4'],explainers:['p2'],suppliers:['p2'],erkTime:30,ts:1700000007,desc:'Klassiker: Rohstoffe sammeln, handeln, bauen. Wer siedelt am besten?'},
-  ],
+  'ev1':[],
   'ev2':[
     {id:'g1',name:'Twilight Imperium 4',nameDe:'Twilight Imperium: Vierte Edition',img:'https://m.media-amazon.com/images/I/71E6iBwlq+L._AC_SL1000_.jpg',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
     {id:'g2',name:'Wingspan',nameDe:'Flügelschlag',img:'https://m.media-amazon.com/images/I/815tajlaaNL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
@@ -624,27 +616,27 @@ var eventGames = {
   ]
 };
 var eventParticipants = {
-  'ev1':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}],
+  'ev1':[],
   'ev2':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}]
 };
 var eventPackItems = {
-  'ev1':[
+  'ev1':[],
+  'ev2':[
     {id:'pk1',participantId:'p-me',text:'Catan',type:'game',checked:false},
     {id:'pk2',participantId:'p-me',text:'Würfel-Set',type:'supply',checked:false},
     {id:'pk3',participantId:'p2',text:'Tacos & Salsa',type:'food',checked:true},
     {id:'pk4',participantId:'p3',text:'Pizza (bestellt)',type:'food',checked:false},
     {id:'pk5',participantId:'p-me',text:'Nudelsalat',type:'food',checked:false},
     {id:'pk6',participantId:'p4',text:'Hausschuhe extra',type:'personal',checked:false},
-  ],
-  'ev2':[]
+  ]
 };
-var eventPayments = {'ev1':{'p-me':false,'p2':true,'p3':false,'p4':true},'ev2':{}};
+var eventPayments = {'ev1':{},'ev2':{'p-me':false,'p2':true,'p3':false,'p4':true}};
 var eventTrades = {
-  'ev1':[
+  'ev1':[],
+  'ev2':[
     {id:'tr1',fromId:'p-me',toId:'p2',item:'Wingspan Promo Pack',status:'packed'},
     {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'packed'},
-  ],
-  'ev2':[]
+  ]
 };
 var virtualParticipants=[],banners=[],polls=[];
 var nextBannerId=1,nextPollId=1,nextVpId=1,nextUserId=3;

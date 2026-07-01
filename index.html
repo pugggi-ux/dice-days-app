@@ -530,12 +530,12 @@ var allEvents = [
 ];
 var eventGames = {
   'ev1':[
-    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',duration:480,wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001},
-    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',duration:70,wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002},
-    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',duration:120,wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003},
-    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',duration:30,wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004},
-    {id:'g5',name:'Gloomhaven',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',duration:120,wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005},
-    {id:'g6',name:'Azul',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',duration:45,wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006},
+    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001},
+    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002},
+    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003},
+    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004},
+    {id:'g5',name:'Gloomhaven',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005},
+    {id:'g6',name:'Azul',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006},
   ],
   'ev2':[]
 };
@@ -788,12 +788,47 @@ function fetchBggCollection(username,attempt,evId,status){
     });
     eventGames[evId]=existing;
     renderAll();
-    status.textContent=added+' Spiele hinzugefügt'+(skipped?' ('+skipped+' bereits vorhanden)':'')+'!';
+    status.textContent=added+' Spiele hinzugefügt'+(skipped?' ('+skipped+' bereits vorhanden)':'')+'! Sweet Spots werden geladen…';
     status.style.color='var(--green)';
+    // fetch sweet spots for all games with a bgg ID
+    var ids=(eventGames[evId]||[]).filter(function(g){return g.bgg&&!g.sweetspot;}).map(function(g){var m=g.bgg.match(/boardgame\/(\d+)/);return m?m[1]:null;}).filter(Boolean);
+    if(ids.length)fetchSweetSpots(ids,evId,status);
   }).catch(function(err){
     status.textContent='Fehler: '+err.message;
     status.style.color='var(--red)';
   });
+}
+function fetchSweetSpots(ids,evId,status){
+  var BATCH=20;
+  var batch=ids.slice(0,BATCH);
+  var rest=ids.slice(BATCH);
+  fetch('https://boardgamegeek.com/xmlapi2/thing?id='+batch.join(',')).then(function(r){return r.text();}).then(function(xml){
+    var parser=new DOMParser(),doc=parser.parseFromString(xml,'text/xml');
+    doc.querySelectorAll('item').forEach(function(item){
+      var bggId=item.getAttribute('id');
+      var bggUrl='https://boardgamegeek.com/boardgame/'+bggId;
+      var g=(eventGames[evId]||[]).find(function(x){return x.bgg===bggUrl;});
+      if(!g)return;
+      var poll=item.querySelector('poll[name="suggested_numplayers"]');
+      if(!poll)return;
+      var maxVotes=0;
+      poll.querySelectorAll('results').forEach(function(rs){
+        var el=rs.querySelector('result[value="Best"]');
+        if(el)maxVotes=Math.max(maxVotes,parseInt(el.getAttribute('numvotes'))||0);
+      });
+      if(maxVotes===0)return;
+      var sweetspot=0;
+      poll.querySelectorAll('results').forEach(function(rs){
+        var np=parseInt(rs.getAttribute('numplayers'));if(isNaN(np))return;
+        var el=rs.querySelector('result[value="Best"]');
+        if(el&&(parseInt(el.getAttribute('numvotes'))||0)===maxVotes&&np>sweetspot)sweetspot=np;
+      });
+      if(sweetspot>0)g.sweetspot=sweetspot;
+    });
+    renderAll();
+    if(rest.length){fetchSweetSpots(rest,evId,status);}
+    else if(status){status.textContent=status.textContent.replace(' Sweet Spots werden geladen…','')+' (Sweet Spots geladen)';}
+  }).catch(function(){});
 }
 
 // ============================================================
@@ -1023,6 +1058,7 @@ function renderGameCard(g,inInbox,swipeKey){
   // info line
   var infoParts=[];
   if(g.players)infoParts.push(g.players+' Sp.');
+  if(g.sweetspot)infoParts.push('Best: '+g.sweetspot);
   if(g.duration)infoParts.push(g.duration+' Min');
   if(g.complexity)infoParts.push('W '+g.complexity);
   var infoLine=infoParts.join(' · ');
@@ -1039,9 +1075,10 @@ function renderGameCard(g,inInbox,swipeKey){
   }
   if(g.ignored)tags+='<span class="tag" style="opacity:.5">Ignoriert</span>';
   if(g.wish)tags+='<span class="tag tan">Wunsch</span>';
-  // right ring: interested / max players
+  // right ring: interested / sweetspot (fallback: max players)
   var maxP=parseInt((g.players||'').split('-').pop())||4;
-  var ratio=g.interested.length/maxP;
+  var sweetspot=g.sweetspot||maxP;
+  var ratio=g.interested.length/sweetspot;
   var ringHtml=ssSVG(ratio,30);
   // cover image
   var thumb=bggThumb(g);

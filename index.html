@@ -15,7 +15,8 @@ body.light{background:#ccc}
 .screen.active{display:flex}
 .app-bar{display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #333;gap:0;flex-shrink:0;position:relative;overflow:hidden;background:var(--surface);min-height:48px}
 .app-bar-title{font-size:13px;font-weight:700;color:var(--tan);cursor:pointer;user-select:none;background:none;border:none;padding:4px 6px;position:relative;z-index:1;white-space:nowrap}
-.app-bar-controls{display:flex;align-items:center;gap:4px;margin-left:auto;position:relative;z-index:1;background:rgba(26,26,26,.55);border-radius:20px;padding:4px 6px;backdrop-filter:blur(4px)}
+.app-bar-left{display:flex;align-items:center;position:relative;z-index:1;background:rgba(26,26,26,.6);border-radius:16px;padding:3px 8px;backdrop-filter:blur(4px)}
+.app-bar-right{display:flex;align-items:center;gap:4px;margin-left:auto;position:relative;z-index:1;background:rgba(26,26,26,.6);border-radius:16px;padding:3px 6px;backdrop-filter:blur(4px)}
 #app-bar-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;opacity:.45}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;line-height:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px}
 .icon-btn:hover{background:#333}
@@ -352,8 +353,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: SPIELE -->
 <div class="screen" id="screen-list">
   <div class="app-bar" id="appbar-list">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -393,8 +396,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: INBOX -->
 <div class="screen" id="screen-inbox">
   <div class="app-bar">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-inbox" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -408,8 +413,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: MITSPIELEN -->
 <div class="screen" id="screen-mit">
   <div class="app-bar">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-mit" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -423,8 +430,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: ERKLÄREN -->
 <div class="screen" id="screen-erk">
   <div class="app-bar">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-erk" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -438,8 +447,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: PACKLISTE -->
 <div class="screen" id="screen-pack">
   <div class="app-bar">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-pack" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -450,8 +461,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: BUFFET -->
 <div class="screen" id="screen-buffet">
   <div class="app-bar">
-    <div class="app-bar-controls">
+    <div class="app-bar-left">
       <button class="app-bar-title" onclick="toggleEventDropdown()">DD 11 ▾</button>
+    </div>
+    <div class="app-bar-right">
       <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300;width:28px;height:28px">+</button>
       <button class="avatar-btn" id="avatar-buffet" onclick="openAvatarMenu(event)">DE</button>
     </div>
@@ -582,7 +595,7 @@ var users = [
 var currentUserId = 'u1';
 var userMemberships = {'u1':['ev2','ev1'], 'u2':[]};
 var userActiveEvent = {'u1':'ev2', 'u2':null};
-var userParticipantIds = {'u1':{'ev1':'p-me'}};
+var userParticipantIds = {'u1':{'ev1':'p-me','ev2':'p-me'}};
 var userSchedules = {
   'u1':{'ev1':{arrivalDate:'2025-07-18',arrivalTime:'16:00',departureDate:'2025-07-20',departureTime:'11:00',sleepStart:'03:00',sleepEnd:'08:00',saved:true}}
 };
@@ -600,11 +613,19 @@ var eventGames = {
     {id:'g6',name:'Azul',nameDe:'Azul',img:'https://images.thalia.media/00/-/05ff119cff3a47198f035bb80ce896e3/azul.jpeg',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006,desc:'Abstraktes Strategiespiel: Fliesen wählen, Muster legen, Punkte maximieren. Einfache Regeln, tiefe Taktik.'},
     {id:'g7',name:'Catan',nameDe:'Die Siedler von Catan',img:'https://cdn02.plentymarkets.com/bhgfynjpsi8e/item/images/589342/middle/589342-1741002023.jpeg',bgg:'https://boardgamegeek.com/boardgame/13',complexity:2.3,players:'3–4',sweetspot:1,duration:90,interaction:'semi',wish:false,ignored:false,interested:['p-me','p2','p3','p4'],explainers:['p2'],suppliers:['p2'],erkTime:30,ts:1700000007,desc:'Klassiker: Rohstoffe sammeln, handeln, bauen. Wer siedelt am besten?'},
   ],
-  'ev2':[]
+  'ev2':[
+    {id:'g1',name:'Twilight Imperium 4',nameDe:'Twilight Imperium: Vierte Edition',img:'https://m.media-amazon.com/images/I/71E6iBwlq+L._AC_SL1000_.jpg',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
+    {id:'g2',name:'Wingspan',nameDe:'Flügelschlag',img:'https://m.media-amazon.com/images/I/815tajlaaNL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
+    {id:'g3',name:'Dune: Imperium',nameDe:'Dune: Imperium',img:'https://www.system-matters.de/wp-content/uploads/Spiel-44-1.png',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,interaction:'semi',wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
+    {id:'g4',name:'Patchwork',nameDe:'Patchwork',img:'https://images.thalia.media/00/-/9efb2afe43454fa1af963d130baf897a/patchwork.png',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004,desc:'Für genau zwei Spieler: Tetris-artiges Quilt-Puzzle, bei dem man Knöpfe sammelt und sein Flickentuch bestmöglich befüllt.'},
+    {id:'g5',name:'Gloomhaven',nameDe:'Gloomhaven',img:'https://m.media-amazon.com/images/I/810dAsU62LL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,interaction:'koop',wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005,desc:'Dungeon-Crawler Kampagne für 1–4 Spieler. Kooperativer Nahkampf, Charakterentwicklung und über 90 Szenarien.'},
+    {id:'g6',name:'Azul',nameDe:'Azul',img:'https://images.thalia.media/00/-/05ff119cff3a47198f035bb80ce896e3/azul.jpeg',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006,desc:'Abstraktes Strategiespiel: Fliesen wählen, Muster legen, Punkte maximieren. Einfache Regeln, tiefe Taktik.'},
+    {id:'g7',name:'Catan',nameDe:'Die Siedler von Catan',img:'https://cdn02.plentymarkets.com/bhgfynjpsi8e/item/images/589342/middle/589342-1741002023.jpeg',bgg:'https://boardgamegeek.com/boardgame/13',complexity:2.3,players:'3–4',sweetspot:1,duration:90,interaction:'semi',wish:false,ignored:false,interested:['p-me','p2','p3','p4'],explainers:['p2'],suppliers:['p2'],erkTime:30,ts:1700000007,desc:'Klassiker: Rohstoffe sammeln, handeln, bauen. Wer siedelt am besten?'},
+  ]
 };
 var eventParticipants = {
   'ev1':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}],
-  'ev2':[]
+  'ev2':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}]
 };
 var eventPackItems = {
   'ev1':[

@@ -55,9 +55,7 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .role-add{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--tan);color:var(--tan);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;background:none}
 .role-chips{display:flex;flex-wrap:wrap;gap:5px}
 .quick-role-btn{margin-top:8px;padding:7px 0;border-radius:10px;border:1.5px solid var(--tan);color:var(--tan);background:rgba(184,160,130,.15);font-size:12px;font-weight:700;cursor:pointer;width:100%;text-align:center;transition:background .15s}.quick-role-btn:active{background:rgba(184,160,130,.3)}
-.role-add-wrap{position:relative;display:inline-flex;flex-shrink:0}
-.role-add-circle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--tan);color:var(--tan);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:rgba(184,160,130,.12);line-height:1;pointer-events:none}
-.role-add-overlay{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.role-add-circle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--tan);color:var(--tan);display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:rgba(184,160,130,.12);line-height:1;cursor:pointer;flex-shrink:0;padding:0}
 .chip{display:inline-flex;align-items:center;gap:3px;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:600}
 .chip-exp{background:rgba(212,160,23,.28);color:#f0c040;border:1px solid rgba(212,160,23,.4)}
 .chip-sup{background:rgba(212,160,23,.22);color:#e8b830;border:1px solid rgba(212,160,23,.35)}
@@ -1211,19 +1209,20 @@ function renderDetail(g){
       (bggId?'<button class="detail-link-btn" onclick="window.open(\'https://bgstats.app/game/'+bggId+'\',\'_blank\')">&#128202; BGStats</button>':'')+
       '</div>';
   }
-  // circular + picker for a role (placed next to the section header title)
+  // circular + button that opens a native select (shown inline after click)
   function inlinePicker(role,gid){
     var notIn=participants.filter(function(p){return g[role].indexOf(p.id)<0;});
     if(!notIn.length)return'';
     var meObj=notIn.find(function(p){return p.id===me;});
     var rest=notIn.filter(function(p){return p.id!==me;});
     var ordered=meObj?[meObj].concat(rest):rest;
+    var selId='rsel-'+role+'-'+gid.replace(/[^a-z0-9]/gi,'');
     var opts=ordered.map(function(p){
       var label=p.id===me?('Ich'+(role==='explainers'?' erkläre':role==='suppliers'?' bringe mit':' bin dabei')):escHtml(p.name);
       return'<option value="'+p.id+'">'+label+'</option>';
     }).join('');
-    return'<span class="role-add-wrap"><span class="role-add-circle">+</span>'+
-      '<select class="role-add-overlay" onchange="if(this.value){quickAddRoleFor(\''+gid+'\',\''+role+'\',this.value);this.value=\'\';}"><option value=""></option>'+opts+'</select></span>';
+    return'<button class="role-add-circle" onclick="var s=document.getElementById(\''+selId+'\');s.style.display=s.style.display===\'none\'?\'inline-block\':\'none\';if(s.style.display!==\'none\')s.focus()">+</button>'+
+      '<select id="'+selId+'" style="display:none;margin-left:4px;background:var(--surface);border:1px solid #555;color:var(--text);border-radius:8px;padding:3px 6px;font-size:12px" onchange="if(this.value){quickAddRoleFor(\''+gid+'\',\''+role+'\',this.value);this.value=\'\';this.style.display=\'none\';}"><option value="">— wählen —</option>'+opts+'</select>';
   }
   // explainer chips
   var ec=g.explainers.map(function(p){

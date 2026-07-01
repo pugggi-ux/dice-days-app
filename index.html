@@ -804,36 +804,61 @@ function fetchBggCollection(username,attempt,evId,status){
     status.style.color='var(--red)';
   });
 }
+function parseBggItem(item,g){
+  // sweet spot
+  var poll=item.querySelector('poll[name="suggested_numplayers"]');
+  if(poll){
+    var maxVotes=0;
+    poll.querySelectorAll('results').forEach(function(rs){var el=rs.querySelector('result[value="Best"]');if(el)maxVotes=Math.max(maxVotes,parseInt(el.getAttribute('numvotes'))||0);});
+    if(maxVotes>0){
+      var sweetspot=0;
+      poll.querySelectorAll('results').forEach(function(rs){var np=parseInt(rs.getAttribute('numplayers'));if(isNaN(np))return;var el=rs.querySelector('result[value="Best"]');if(el&&(parseInt(el.getAttribute('numvotes'))||0)===maxVotes&&np>sweetspot)sweetspot=np;});
+      if(sweetspot>0)g.sweetspot=sweetspot;
+    }
+  }
+  // main image
+  var mainImgEl=item.querySelector('items > item > image, item > image');
+  if(!mainImgEl)mainImgEl=item.querySelector('image');
+  var mainImg=mainImgEl?mainImgEl.textContent.trim():'';
+  // German version: image + name
+  var deImg='',deName='';
+  item.querySelectorAll('versions item').forEach(function(v){
+    if(deImg&&deName)return;
+    if(v.querySelector('link[type="language"][value="German"]')){
+      var vi=v.querySelector('image');if(vi&&!deImg)deImg=vi.textContent.trim();
+      var vn=v.querySelector('name[type="primary"]');if(vn&&!deName)deName=vn.getAttribute('value')||'';
+    }
+  });
+  var img=deImg||mainImg;
+  if(img&&!g.img)g.img=img.startsWith('//')?'https:'+img:img;
+  if(deName&&!g.nameDe)g.nameDe=deName;
+}
 function fetchSweetSpots(ids,evId,status){
   var BATCH=20;
   var batch=ids.slice(0,BATCH);
   var rest=ids.slice(BATCH);
-  fetch('https://boardgamegeek.com/xmlapi2/thing?id='+batch.join(',')).then(function(r){return r.text();}).then(function(xml){
+  fetch('https://boardgamegeek.com/xmlapi2/thing?id='+batch.join(',')+'&versions=1').then(function(r){return r.text();}).then(function(xml){
     var parser=new DOMParser(),doc=parser.parseFromString(xml,'text/xml');
-    doc.querySelectorAll('item').forEach(function(item){
+    doc.querySelectorAll('items > item').forEach(function(item){
       var bggId=item.getAttribute('id');
       var bggUrl='https://boardgamegeek.com/boardgame/'+bggId;
       var g=(eventGames[evId]||[]).find(function(x){return x.bgg===bggUrl;});
       if(!g)return;
-      var poll=item.querySelector('poll[name="suggested_numplayers"]');
-      if(!poll)return;
-      var maxVotes=0;
-      poll.querySelectorAll('results').forEach(function(rs){
-        var el=rs.querySelector('result[value="Best"]');
-        if(el)maxVotes=Math.max(maxVotes,parseInt(el.getAttribute('numvotes'))||0);
-      });
-      if(maxVotes===0)return;
-      var sweetspot=0;
-      poll.querySelectorAll('results').forEach(function(rs){
-        var np=parseInt(rs.getAttribute('numplayers'));if(isNaN(np))return;
-        var el=rs.querySelector('result[value="Best"]');
-        if(el&&(parseInt(el.getAttribute('numvotes'))||0)===maxVotes&&np>sweetspot)sweetspot=np;
-      });
-      if(sweetspot>0)g.sweetspot=sweetspot;
+      parseBggItem(item,g);
     });
     renderAll();
     if(rest.length){fetchSweetSpots(rest,evId,status);}
-    else if(status){status.textContent=status.textContent.replace(' Sweet Spots werden geladen…','')+' (Sweet Spots geladen)';}
+    else if(status){status.textContent=status.textContent.replace(' Sweet Spots werden geladen…','')+' (Sweet Spots + Cover geladen)';}
+  }).catch(function(){});
+}
+function fetchGameCover(g){
+  var m=g.bgg&&g.bgg.match(/boardgame\/(\d+)/);if(!m)return;
+  fetch('https://boardgamegeek.com/xmlapi2/thing?id='+m[1]+'&versions=1').then(function(r){return r.text();}).then(function(xml){
+    var parser=new DOMParser(),doc=parser.parseFromString(xml,'text/xml');
+    var item=doc.querySelector('items > item');if(!item)return;
+    parseBggItem(item,g);
+    var hdr=document.getElementById('detail-header');
+    if(hdr&&currentScreen==='detail'&&g.img)hdr.style.backgroundImage='url(\''+g.img+'\')';
   }).catch(function(){});
 }
 
@@ -1059,11 +1084,8 @@ function renderGameList(){
   updateInboxDot();updateEventTitle();
 }
 
-function bggThumb(g){
-  if(g.img)return g.img;
-  if(g.bgg){var m=g.bgg.match(/boardgame\/(\d+)/);if(m)return'https://cf.geekdo-images.com/thumb/img/'+m[1];}
-  return'';
-}
+function bggThumb(g){return g.img||'';}
+function gameName(g){return g.nameDe||g.name;}
 function renderGameCard(g,inInbox,swipeKey){
   var me=ME(),amInt=me&&g.interested.indexOf(me)>=0,amExp=me&&g.explainers.indexOf(me)>=0;
   var participants=currentParticipants();
@@ -1125,7 +1147,7 @@ function renderGameCard(g,inInbox,swipeKey){
       imgHtml+
       '<div style="flex:1;min-width:0;">'+
         warnHtml+
-        '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.2">'+escHtml(g.name)+'</div>'+
+        '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.2">'+escHtml(gameName(g))+'</div>'+
         (infoLine?'<div style="font-size:13px;color:var(--muted);margin-bottom:5px">'+infoLine+'</div>':'')+
         (tags?'<div class="game-tags">'+tags+'</div>':'')+
         btnHtml+
@@ -1173,9 +1195,11 @@ var detailReturnScreen='list';
 function openDetail(gid,fromScreen){
   var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
   detailReturnScreen=fromScreen||'list';
-  var thumb=bggThumb(g);
   var hdr=document.getElementById('detail-header');
-  if(hdr)hdr.style.backgroundImage=thumb?'url(\''+thumb+'\')':'none';
+  if(hdr){
+    if(g.img){hdr.style.backgroundImage='url(\''+g.img+'\')';}
+    else{hdr.style.backgroundImage='none';if(g.bgg)fetchGameCover(g);}
+  }
   renderDetail(g);
   showScreen('detail');
 }
@@ -1250,7 +1274,7 @@ function renderDetail(g){
   var descHtml=g.desc?'<div class="detail-desc">'+escHtml(g.desc)+'</div>':'';
   var el=document.getElementById('detail-content');if(!el)return;
   el.innerHTML=
-    '<div class="detail-title-row"><span class="detail-title">'+escHtml(g.name)+'</span><span style="margin-left:auto;flex-shrink:0">'+ssSVG(ratio,22)+'</span></div>'+
+    '<div class="detail-title-row"><span class="detail-title">'+escHtml(gameName(g))+'</span><span style="margin-left:auto;flex-shrink:0">'+ssSVG(ratio,22)+'</span></div>'+
     metaHtml+statusHtml+descHtml+linksHtml+
     '<div class="role-columns">'+
       '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Erkl&#228;rer</span>'+inlinePicker('explainers',g.id)+'</div><div class="role-chips">'+ec+'</div>'+(!amExp&&!g.explainers.length&&me?'<button class="quick-role-btn" onclick="quickAddRole(\''+g.id+'\',\'explainers\')">Ich erkl&#228;re</button>':'')+'</div>'+
@@ -1342,7 +1366,7 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
   return'<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer" onclick="if(!event.target.closest(\'button\')&&!event.target.closest(\'a\')){openDetail(\''+g.id+'\',\''+curScr+'\');}">'+
     (imgHtml)+
     '<div style="flex:1;min-width:0">'+
-      '<div style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(g.name)+'</div>'+
+      '<div style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(gameName(g))+'</div>'+
       (others.length?'<div style="font-size:12px;color:var(--muted);margin-top:2px">mit '+others.join(', ')+'</div>':'')+
       '<div class="game-tags" style="margin-top:5px">'+tags+'</div>'+
       (extraBtns?'<div class="btn-row" onclick="event.stopPropagation()">'+extraBtns+'</div>':'')+

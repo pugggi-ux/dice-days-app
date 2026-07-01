@@ -55,6 +55,7 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .role-add{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--tan);color:var(--tan);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;background:none}
 .role-chips{display:flex;flex-wrap:wrap;gap:5px}
 .quick-role-btn{margin-top:8px;padding:7px 0;border-radius:10px;border:1.5px solid var(--tan);color:var(--tan);background:rgba(184,160,130,.15);font-size:12px;font-weight:700;cursor:pointer;width:100%;text-align:center;transition:background .15s}.quick-role-btn:active{background:rgba(184,160,130,.3)}
+.role-add-sel{margin-top:8px;width:100%;background:var(--surface);border:1.5px solid #444;color:var(--text);border-radius:10px;padding:7px 10px;font-size:12px;cursor:pointer}
 .chip{display:inline-flex;align-items:center;gap:3px;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:600}
 .chip-exp{background:rgba(212,160,23,.28);color:#f0c040;border:1px solid rgba(212,160,23,.4)}
 .chip-sup{background:rgba(212,160,23,.22);color:#e8b830;border:1px solid rgba(212,160,23,.35)}
@@ -188,6 +189,9 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 .trigger-row{display:flex;gap:8px;margin-top:8px}
 .trigger-opt{flex:1;padding:8px;border-radius:8px;border:1px solid #444;background:none;color:var(--muted);font-size:12px;cursor:pointer;text-align:center}
 .trigger-opt.active{border-color:var(--tan);color:var(--tan)}
+#toast{position:absolute;bottom:16px;left:12px;right:12px;background:#3a3a3a;color:var(--text);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;z-index:1000;transform:translateY(100px);transition:transform .25s ease;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#toast.show{transform:translateY(0);pointer-events:auto}
+.toast-undo{background:none;border:none;color:var(--tan);font-size:13px;font-weight:700;cursor:pointer;padding:0;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -427,6 +431,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="action-bar" id="detail-actions"></div>
 </div>
 
+<div id="toast"><span id="toast-msg"></span><button class="toast-undo" id="toast-undo-btn">Rückgängig</button></div>
 
 </div>
 <script>
@@ -531,10 +536,10 @@ var allEvents = [
 ];
 var eventGames = {
   'ev1':[
-    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001},
-    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002},
-    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003},
-    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004},
+    {id:'g1',name:'Twilight Imperium 4',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
+    {id:'g2',name:'Wingspan',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
+    {id:'g3',name:'Dune: Imperium',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
+    {id:'g4',name:'Patchwork',bgg:'https://boardgamegeek.com/boardgame/163412',complexity:1.8,players:'2',sweetspot:2,duration:30,wish:false,ignored:false,interested:['p-me','p2','p3'],explainers:['p3'],suppliers:['p3'],erkTime:30,ts:1700000004,desc:'Für genau zwei Spieler: Tetris-artiges Quilt-Puzzle, bei dem man Knöpfe sammelt und sein Flickentuch bestmöglich befüllt.'},
     {id:'g5',name:'Gloomhaven',bgg:'https://boardgamegeek.com/boardgame/174430',complexity:3.9,players:'1–4',sweetspot:4,duration:120,wish:true,ignored:false,interested:[],explainers:[],suppliers:[],erkTime:120,ts:1700000005},
     {id:'g6',name:'Azul',bgg:'https://boardgamegeek.com/boardgame/230802',complexity:1.8,players:'2–4',sweetspot:4,duration:45,wish:false,ignored:false,interested:['p-me'],explainers:[],suppliers:['p-me'],erkTime:45,ts:1700000006},
   ],
@@ -983,12 +988,22 @@ function votePoll(id,idx){var p=polls.find(function(x){return x.id===id;});if(!p
 var SNAP=70,FLY=160,WW=90,touchState={};
 function gTX(el){var m=el.style.transform.match(/translateX\(([^)]+)\)/);return m?parseFloat(m[1]):0;}
 function swS(e,k,c){if(snappedCardId&&snappedCardId!==k)unsnap(snappedCardId);var t=e.touches[0];touchState[k]={sX:t.clientX,sY:t.clientY,oX:gTX(c),moved:false};c.style.transition='none';}
-function swM(e,k,c,wi,we){var ts=touchState[k];if(!ts)return;var t=e.touches[0],dx=t.clientX-ts.sX,dy=t.clientY-ts.sY;if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;ts.moved=true;e.preventDefault();var tx=ts.oX+dx;c.style.transform='translateX('+tx+'px)';if(tx>0){var iw=Math.min(tx,WW);wi.style.width=iw+'px';wi.style.padding=iw>20?'0 12px':'0';if(tx>WW){var ew=Math.min(tx-WW,WW);we.style.width=ew+'px';we.style.padding=ew>20?'0 12px':'0';we.style.left=iw+'px';}else{we.style.width='0';we.style.padding='0';}}else{wi.style.width='0';wi.style.padding='0';we.style.width='0';we.style.padding='0';}}
+function swM(e,k,c,wi,we){var ts=touchState[k];if(!ts)return;var t=e.touches[0],dx=t.clientX-ts.sX,dy=t.clientY-ts.sY;if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;ts.moved=true;e.preventDefault();var tx=ts.oX+dx;c.style.transform='translateX('+tx+'px)';var wh=c.parentElement&&c.parentElement.querySelector('.wagon-hide');if(wh)wh.style.visibility=tx>0?'hidden':'visible';if(tx>0){var iw=Math.min(tx,WW);wi.style.width=iw+'px';wi.style.padding=iw>20?'0 12px':'0';if(tx>WW){var ew=Math.min(tx-WW,WW);we.style.width=ew+'px';we.style.padding=ew>20?'0 12px':'0';we.style.left=iw+'px';}else{we.style.width='0';we.style.padding='0';}}else{wi.style.width='0';wi.style.padding='0';we.style.width='0';we.style.padding='0';}}
 function swE(k,c,gid,onR,onL){var ts=touchState[k];if(!ts)return;var tx=gTX(c);c.style.transition='transform .3s ease';if(tx<-FLY){c.style.transform='translateX(-120%)';setTimeout(function(){onL(gid);},300);}else if(tx>FLY){c.style.transform='translateX(120%)';setTimeout(function(){onR(gid,false);},300);}else if(tx>=SNAP){swSnap(k,gid,onR);}else{resetC(k);}delete touchState[k];}
 function swSnap(k,gid,onR){snappedCardId=k;var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);c.style.transition='transform .25s ease';c.style.transform='translateX('+(WW*2)+'px)';wi.style.width=WW+'px';wi.style.padding='0 12px';we.style.width=WW+'px';we.style.padding='0 10px';we.style.left=WW+'px';wi.classList.add('tappable');we.classList.add('tappable');wi.onclick=function(){onR(gid,false);};we.onclick=function(){onR(gid,true);};}
 function unsnap(k){if(snappedCardId===k)snappedCardId=null;resetC(k);}
-function resetC(k){var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);if(!c)return;c.style.transition='transform .25s ease';c.style.transform='translateX(0)';if(wi){wi.style.width='0';wi.style.padding='0';wi.classList.remove('tappable');wi.onclick=null;}if(we){we.style.width='0';we.style.padding='0';we.classList.remove('tappable');we.onclick=null;}if(snappedCardId===k)snappedCardId=null;}
+function resetC(k){var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);if(!c)return;c.style.transition='transform .25s ease';c.style.transform='translateX(0)';var wh=c.parentElement&&c.parentElement.querySelector('.wagon-hide');if(wh)wh.style.visibility='visible';if(wi){wi.style.width='0';wi.style.padding='0';wi.classList.remove('tappable');wi.onclick=null;}if(we){we.style.width='0';we.style.padding='0';we.classList.remove('tappable');we.onclick=null;}if(snappedCardId===k)snappedCardId=null;}
 function attachSw(k,gid,onR,onL){var c=document.getElementById('sc-'+k),wi=document.getElementById('wi-'+k),we=document.getElementById('we-'+k);if(!c)return;c.addEventListener('touchstart',function(e){swS(e,k,c);},{passive:true});c.addEventListener('touchmove',function(e){swM(e,k,c,wi,we);},{passive:false});c.addEventListener('touchend',function(){swE(k,c,gid,onR,onL);});}
+var toastTimer=null;
+function showToast(msg,undoFn){
+  var t=document.getElementById('toast'),m=document.getElementById('toast-msg'),u=document.getElementById('toast-undo-btn');
+  if(!t)return;
+  m.textContent=msg;
+  u.onclick=function(){if(toastTimer)clearTimeout(toastTimer);t.classList.remove('show');undoFn();};
+  t.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},4000);
+}
 
 // ============================================================
 // GAME LIST
@@ -1036,7 +1051,7 @@ function renderGameList(){
     var card=document.querySelector('.game-card[data-id="'+g.id+'"]');
     if(card&&!card.dataset.detail){card.dataset.detail='1';card.addEventListener('click',function(e){if(!e.target.closest('button')&&!e.target.closest('a')&&!e.target.closest('select')){openDetail(g.id,'list');}});}
   });
-  if(controlMode==='swipe')filtered.forEach(function(g){attachSw('l-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);},ignoreGame);});
+  if(controlMode==='swipe')filtered.forEach(function(g){attachSw('l-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);showToast(wE?'Erklärer eingetragen':'Interesse angemeldet',function(){toggleInterest(gid);if(wE)removeExplainer(gid);});},function(gid){ignoreGame(gid);showToast('Ignoriert',function(){var x=currentGames().find(function(g){return g.id===gid;});if(x){x.ignored=false;renderAll();}});});});
   updateInboxDot();updateEventTitle();
 }
 
@@ -1165,10 +1180,11 @@ function pName(pid){var p=currentParticipants().find(function(x){return x.id===p
 function renderDetail(g){
   var me=ME(),amInt=me&&g.interested.indexOf(me)>=0,amExp=me&&g.explainers.indexOf(me)>=0,amSup=me&&g.suppliers.indexOf(me)>=0;
   var participants=currentParticipants();
-  // capacity ring
+  // capacity ring using sweetspot
   var intCount=g.interested.length;
   var maxP=parseInt((g.players||'').split('-').pop())||4;
-  var ratio=intCount/maxP;
+  var sweetspot=g.sweetspot||maxP;
+  var ratio=intCount/sweetspot;
   // status line
   var bns=[];
   if(!g.explainers.length)bns.push('Kein Erklärer');
@@ -1180,6 +1196,7 @@ function renderDetail(g){
   // meta
   var metaParts=[];
   if(g.players)metaParts.push(g.players+' Spieler');
+  if(g.sweetspot)metaParts.push('Best: '+g.sweetspot);
   if(g.duration)metaParts.push(g.duration+' Min');
   if(g.complexity)metaParts.push('Gewicht '+g.complexity);
   var metaHtml=metaParts.length?'<div class="detail-meta">'+metaParts.join(' · ')+'</div>':'';
@@ -1192,46 +1209,65 @@ function renderDetail(g){
       (bggId?'<button class="detail-link-btn" onclick="window.open(\'https://bgstats.app/game/'+bggId+'\',\'_blank\')">&#128202; BGStats</button>':'')+
       '</div>';
   }
+  // participant picker helper
+  function pickerHtml(role,selfBtn,selfFn){
+    var notIn=participants.filter(function(p){return g[role].indexOf(p.id)<0;});
+    var opts=notIn.map(function(p){return'<option value="'+p.id+'">'+escHtml(p.name)+'</option>';}).join('');
+    var pickerId='add-'+role+'-'+g.id;
+    return (selfBtn&&notIn.find(function(p){return p.id===me;})
+      ?'<button class="quick-role-btn" onclick="'+selfFn+'">'+selfBtn+'</button>':'')+
+      (notIn.length?'<select class="role-add-sel" onchange="if(this.value){quickAddRoleFor(\''+g.id+'\',\''+role+'\',this.value);this.value=\'\';}"><option value="">+ hinzufügen</option>'+opts+'</select>':'');
+  }
   // explainer chips
   var ec=g.explainers.map(function(p){
     var cls=p===me?'chip chip-me-exp':'chip chip-exp';
     return'<span class="'+cls+'">'+(p===me?'Du':pName(p))+'<span class="chip-rm" onclick="removeRole(\''+g.id+'\',\'explainers\',\''+p+'\')">&#x2715;</span></span>';
   }).join('');
-  var erkBtn=!amExp?'<button class="quick-role-btn" onclick="quickAddRole(\''+g.id+'\',\'explainers\')">Ich erkl&#228;re</button>':'';
+  var expControls=pickerHtml('explainers',!amExp?'Ich erkläre':null,'quickAddRole(\''+g.id+'\',\'explainers\')');
   // supplier chips
   var sc=g.suppliers.map(function(p){
     var cls=p===me?'chip chip-me':'chip chip-sup';
     return'<span class="'+cls+'">'+(p===me?'Du':pName(p))+'<span class="chip-rm" onclick="removeRole(\''+g.id+'\',\'suppliers\',\''+p+'\')">&#x2715;</span></span>';
   }).join('');
-  var supBtn=!amSup?'<button class="quick-role-btn" onclick="quickAddRole(\''+g.id+'\',\'suppliers\')">Ich bringe mit</button>':'';
-  // interest chips
+  var supControls=pickerHtml('suppliers',!amSup?'Ich bringe mit':null,'quickAddRole(\''+g.id+'\',\'suppliers\')');
+  // interest chips + add picker
   var intChips=g.interested.map(function(pid){
     var isMe=pid===me;var isExp=g.explainers.indexOf(pid)>=0;
     var cls=isMe?(isExp?'chip chip-interest-me-exp':'chip chip-interest-me'):'chip chip-interest';
     var nm=isMe?'Du':pName(pid);
-    return'<span class="'+cls+'">'+escHtml(nm)+'</span>';
+    var rm=isMe?'<span class="chip-rm" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))" >&#x2715;</span>':'';
+    return'<span class="'+cls+'">'+escHtml(nm)+rm+'</span>';
   }).join('');
+  var intNotIn=participants.filter(function(p){return g.interested.indexOf(p.id)<0;});
+  var intPickerOpts=intNotIn.map(function(p){return'<option value="'+p.id+'">'+escHtml(p.name)+'</option>';}).join('');
+  var intControls=intNotIn.length?'<select class="role-add-sel" onchange="if(this.value){quickAddRoleFor(\''+g.id+'\',\'interested\',this.value);this.value=\'\';}"><option value="">+ hinzufügen</option>'+intPickerOpts+'</select>':'';
+  // description
+  var descHtml=g.desc?'<div class="detail-desc">'+escHtml(g.desc)+'</div>':'';
   var el=document.getElementById('detail-content');if(!el)return;
   el.innerHTML=
     '<div class="detail-title-row"><span class="detail-title">'+escHtml(g.name)+'</span>'+ssSVG(ratio,28)+'</div>'+
-    metaHtml+statusHtml+
-    (g.desc?'<div class="detail-desc">'+escHtml(g.desc)+'</div>':'')+
-    linksHtml+
+    metaHtml+statusHtml+descHtml+linksHtml+
     '<div class="role-columns">'+
-      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Erkl&#228;rer</span></div><div class="role-chips">'+ec+'</div>'+erkBtn+'</div>'+
-      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Lieferant</span></div><div class="role-chips">'+sc+'</div>'+supBtn+'</div>'+
+      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Erkl&#228;rer</span></div><div class="role-chips">'+ec+'</div>'+expControls+'</div>'+
+      '<div class="role-col"><div class="role-col-header"><span class="role-col-title">Lieferant</span></div><div class="role-chips">'+sc+'</div>'+supControls+'</div>'+
     '</div>'+
-    '<div class="interest-section"><div class="interest-header">Interessenten <span style="color:var(--muted);font-size:12px;font-weight:400">'+intCount+'</span></div><div class="interest-chips">'+intChips+'</div></div>';
+    '<div class="interest-section"><div class="interest-header">Interessenten <span style="color:var(--muted);font-size:12px;font-weight:400">'+intCount+'</span></div><div class="interest-chips">'+intChips+'</div>'+intControls+'</div>';
   // action bar
   var actEl=document.getElementById('detail-actions');if(!actEl)return;
+  var btns='';
   if(amInt){
-    actEl.innerHTML='<button class="action-btn btn-grey" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Zur&#252;ckziehen</button>';
+    btns+='<button class="action-btn btn-grey" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Zur&#252;ckziehen</button>';
   }else{
-    actEl.innerHTML='<button class="action-btn btn-green" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Interesse</button>';
+    btns+='<button class="action-btn btn-green" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Interesse</button>';
+  }
+  if(!amExp){
+    var needsExp=!!g.needsExp;
+    btns+='<button class="action-btn '+(needsExp?'btn-green':'btn-grey')+'" onclick="toggleNeedsExp(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">'+(needsExp?'Erkl&#228;rbedarf ✓':'Erkl&#228;rbedarf')+'</button>';
   }
   if(g.wish&&me){
-    actEl.innerHTML+='<button class="action-btn btn-green" onclick="fulfillWish(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Wunsch erf&#252;llen</button>';
+    btns+='<button class="action-btn btn-green" onclick="fulfillWish(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Wunsch erf&#252;llen</button>';
   }
+  actEl.innerHTML=btns;
 }
 function setDetailExplainer(gid,pid){
   var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
@@ -1245,12 +1281,25 @@ function quickAddRole(gid,role){
   var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
   var me=ME();if(!me)return;
   if(g[role].indexOf(me)<0)g[role].push(me);
+  if(role==='explainers')g.needsExp=false;
+  renderDetail(g);renderAll();
+}
+function quickAddRoleFor(gid,role,pid){
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g||!pid)return;
+  if(!g[role])g[role]=[];
+  if(g[role].indexOf(pid)<0)g[role].push(pid);
+  if(role==='explainers'&&pid===ME())g.needsExp=false;
   renderDetail(g);renderAll();
 }
 function removeRole(gid,role,pid){
   var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
   g[role]=g[role].filter(function(p){return p!==pid;});
   renderDetail(g);renderAll();
+}
+function toggleNeedsExp(gid){
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  g.needsExp=!g.needsExp;
+  renderAll();
 }
 
 // ============================================================
@@ -1266,7 +1315,7 @@ function renderInbox(){
     var card=document.querySelector('.game-card[data-id="'+g.id+'"]');
     if(card&&!card.dataset.detail){card.dataset.detail='1';card.addEventListener('click',function(e){if(!e.target.closest('button')&&!e.target.closest('a')&&!e.target.closest('select')){openDetail(g.id,'inbox');}});}
   });
-  if(controlMode==='swipe')games.forEach(function(g){attachSw('i-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);},ignoreGame);});
+  if(controlMode==='swipe')games.forEach(function(g){attachSw('i-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);showToast(wE?'Erklärer eingetragen':'Interesse angemeldet',function(){toggleInterest(gid);if(wE)removeExplainer(gid);});},function(gid){ignoreGame(gid);showToast('Ignoriert',function(){var x=currentGames().find(function(g){return g.id===gid;});if(x){x.ignored=false;renderAll();}});});});
 }
 
 // ============================================================

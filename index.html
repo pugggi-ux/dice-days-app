@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#111;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;font-family:'Segoe UI',sans-serif;color:var(--text)}
 #app{position:relative;width:100%;max-width:430px;height:100svh;height:100vh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
-:root{--tan:#B8A082;--surface:#252525;--card:#2e2e2e;--text:#e8e8e8;--muted:#888;--red:#e05555;--green:#5a9e6f;--yellow:#d4a017;--bg:#1a1a1a}
+:root{--tan:#B8A082;--surface:#252525;--card:#2e2e2e;--text:#e8e8e8;--muted:#aaa;--red:#e05555;--green:#5a9e6f;--yellow:#d4a017;--bg:#1a1a1a}
 :root.light{--tan:#8B6E4E;--surface:#f0ede8;--card:#ffffff;--text:#1a1a1a;--muted:#777;--red:#c0392b;--green:#2e7d4f;--yellow:#b8860b;--bg:#e8e4de}
 body.light{background:#ccc}
 .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
@@ -439,8 +439,8 @@ function ic(paths,sz){
 function ssSVG(r,sz){
   sz=sz||30;
   if(r>1){
-    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+
-      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z" fill="var(--red)" stroke="none"/>'+
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+
+      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z" fill="var(--green)" stroke="none" opacity=".7"/>'+
       '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z"/>'+
       '<path d="M8 14c-1.2.8-2 2-2 3.5C6 19.4 8.7 21 12 21s6-1.6 6-3.5c0-1.5-.8-2.7-2-3.5 0 1-.6 2-2 2.5.3-.8.4-1.7 0-2.5"/>'+
     '</svg>';
@@ -1244,13 +1244,14 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
   tags+=extraTags;
   var bggImg=g.bgg?g.bgg.replace(/.*boardgame\/(\d+).*/,'https://cf.geekdo-images.com/thumb/img/$1'):'';
   var imgHtml='';
-  return'<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px">'+
+  var curScr=currentScreen||'list';
+  return'<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer" onclick="if(!event.target.closest(\'button\')&&!event.target.closest(\'a\')){openDetail(\''+g.id+'\',\''+curScr+'\');}">'+
     (imgHtml)+
     '<div style="flex:1;min-width:0">'+
-      '<div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>':escHtml(g.name))+'</div>'+
-      (others.length?'<div style="font-size:11px;color:var(--muted);margin-top:2px">mit '+others.join(', ')+'</div>':'')+
+      '<div style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(g.name)+'</div>'+
+      (others.length?'<div style="font-size:12px;color:var(--muted);margin-top:2px">mit '+others.join(', ')+'</div>':'')+
       '<div class="game-tags" style="margin-top:5px">'+tags+'</div>'+
-      (extraBtns?'<div class="btn-row">'+extraBtns+'</div>':'')+
+      (extraBtns?'<div class="btn-row" onclick="event.stopPropagation()">'+extraBtns+'</div>':'')+
     '</div>'+
     '<div style="color:'+rightColor+';flex-shrink:0;display:flex;align-items:center">'+rightIcon+'</div>'+
   '</div>';

@@ -1791,11 +1791,12 @@ function renderPackliste(){
   el.innerHTML=html;
 }
 function renderScheduleSection(){
+  function fmtDate(d){if(!d)return'';var p=d.split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d;}
   var ev=currentEvent(),sched=mySchedule();if(!ev)return'<div style="color:var(--muted);font-size:13px">Kein Event</div>';
   if(sched&&sched.saved){
     return'<div class="sched-display">'+
-      '<div class="sched-row"><span class="sched-label">Anreise</span><span>'+sched.arrivalDate+' '+sched.arrivalTime+'</span></div>'+
-      '<div class="sched-row"><span class="sched-label">Abreise</span><span>'+sched.departureDate+' '+sched.departureTime+'</span></div>'+
+      '<div class="sched-row"><span class="sched-label">Anreise</span><span>'+fmtDate(sched.arrivalDate)+' '+sched.arrivalTime+'</span></div>'+
+      '<div class="sched-row"><span class="sched-label">Abreise</span><span>'+fmtDate(sched.departureDate)+' '+sched.departureTime+'</span></div>'+
       '<div class="sched-row"><span class="sched-label">Schlaf</span><span>'+sched.sleepStart+' – '+sched.sleepEnd+'</span></div>'+
       '<button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="editSchedule()">Bearbeiten</button></div>';
   }

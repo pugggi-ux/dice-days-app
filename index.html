@@ -28,7 +28,15 @@ body.light{background:#ccc}
 input,select,textarea{background:#333;border:1px solid #444;color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--tan)}
 label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-top:10px}
-.bottom-nav{display:flex;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0}
+.bottom-nav{display:flex;background:var(--surface);border-top:1px solid #333;flex-shrink:0}
+/* Game card rich layout */
+.game-card-cover{width:64px;min-height:72px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--surface)}
+.game-card-cover-ph{width:64px;min-height:72px;border-radius:8px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+/* Detail screen */
+.detail-img{width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--surface)}
+.detail-img-ph{width:80px;height:80px;border-radius:10px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.detail-desc{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:16px}
+.participant-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;gap:3px;position:relative}
 .nav-btn svg{opacity:.6}
 .nav-btn.active{color:var(--tan)}
@@ -266,17 +274,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <div class="screen" id="screen-list">
   <div class="app-bar">
     <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days</button>
-    <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-list"></button>
+    <span id="event-code-badge" style="font-size:11px;font-weight:700;background:var(--card);border:1px solid #444;border-radius:6px;padding:3px 8px;color:var(--muted);letter-spacing:1px"></span>
+    <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300">+</button>
     <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
     <div class="event-dropdown" id="event-dropdown"></div>
-  </div>
-  <div class="bottom-nav" id="bottom-nav">
-    <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
-    <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')"><span id="ni-inbox"></span>Inbox<span class="nav-dot" id="inbox-dot" style="display:none"></span></button>
-    <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')"><span id="ni-mit"></span>Mitspielen</button>
-    <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')"><span id="ni-erk"></span>Erklären</button>
-    <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')"><span id="ni-pack"></span>Packliste</button>
-    <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')"><span id="ni-buffet"></span>Buffet</button>
   </div>
   <div id="msg-banner-list" style="padding:8px 12px 0"></div>
   <div class="paypal-banner" id="paypal-banner" style="display:none;margin:8px 12px 0">
@@ -284,8 +285,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="pp-btn" onclick="openPayPal()">PayPal</button>
   </div>
   <div class="tabs" id="list-tabs">
-    <button class="tab active" data-tab="all" onclick="switchListTab('all')">Alle Spiele <span id="tab-all-count" class="badge" style="background:#444">0</span></button>
-    <button class="tab" data-tab="wish" onclick="switchListTab('wish')">Wunschliste <span id="tab-wish-count" class="badge" style="background:#444">0</span><span id="wish-dot" class="tab-dot" style="display:none"></span></button>
+    <button class="tab active" id="tab-btn-all" onclick="switchListTab('all')">Alle</button>
+    <button class="tab" id="tab-btn-mine" onclick="switchListTab('mine')">Meine</button>
+    <button class="tab" id="tab-btn-shortage" onclick="switchListTab('shortage')">Engpass</button>
+    <button class="tab" id="tab-btn-wish" onclick="switchListTab('wish')">Wunschliste<span id="wish-dot" class="tab-dot" style="display:none"></span></button>
   </div>
   <div class="sort-bar">
     <select id="sort-select" onchange="renderGameList()">
@@ -299,7 +302,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   </div>
   <div class="scroll-area" id="game-list-scroll">
     <div id="game-list"></div>
-    <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="showAddGame()">+ Spiel hinzufügen</button>
     <div id="polls-area" style="margin-top:16px"></div>
   </div>
 </div>
@@ -373,6 +375,25 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="scroll-area" id="admin-scroll"></div>
 </div>
 
+<!-- SCREEN: DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="app-bar">
+    <button class="icon-btn" id="back-detail" onclick="goBackFromDetail()"></button>
+    <span class="app-bar-title" style="cursor:default;font-size:14px" id="detail-back-label">Zurück</span>
+    <button class="avatar-btn" id="avatar-detail" onclick="openAvatarMenu(event)">DE</button>
+  </div>
+  <div class="scroll-area" id="detail-scroll"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottom-nav">
+  <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
+  <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')"><span id="ni-inbox"></span>Inbox<span class="nav-dot" id="inbox-dot" style="display:none"></span></button>
+  <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')"><span id="ni-mit"></span>Mitspielen</button>
+  <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')"><span id="ni-erk"></span>Erklären</button>
+  <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')"><span id="ni-pack"></span>Packliste</button>
+  <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')"><span id="ni-buffet"></span>Buffet</button>
+</div>
 
 </div>
 <script>
@@ -415,6 +436,7 @@ function initIcons(){
   Object.keys(nm).forEach(function(k){var el=document.getElementById(nm[k]);if(el)el.innerHTML=icons[k];});
   var sg=ICO.settings;
   ['settings-list','settings-inbox','settings-mit','settings-erk','settings-pack','settings-buffet'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=sg;});
+  var bd=document.getElementById('back-detail');if(bd)bd.innerHTML=ICO.back;
   var ba=ICO.back;
   var bel=document.getElementById('back-admin');if(bel)bel.innerHTML=ba;
   var eyeEl=document.getElementById('eye-btn');if(eyeEl)eyeEl.innerHTML=ICO.eye;
@@ -573,10 +595,7 @@ function showScreen(name){
   var s=document.getElementById('screen-'+name);if(s)s.classList.add('active');
   var nb=document.getElementById('nav-'+name);if(nb)nb.classList.add('active');
   var nav=document.getElementById('bottom-nav');
-  if(name==='admin'){nav.style.display='none';}else{
-    nav.style.display='flex';
-    if(s){var ab=s.querySelector('.app-bar');if(ab)s.insertBefore(nav,ab.nextSibling);}
-  }
+  if(nav)nav.style.display=(name==='admin'||name==='detail')?'none':'flex';
   if(name==='list'){renderGameList();renderBanners();renderPaypalBanner();renderPolls();updateEventTitle();}
   if(name==='inbox'){renderInbox();renderUnifiedTimeBar('inbox-timebar');}
   if(name==='mit'){renderMit();renderUnifiedTimeBar('mit-timebar');}
@@ -597,6 +616,7 @@ function updateEventTitle(){
   var dot=getInboxGames().length>0?' ●':'';
   btn.textContent=(ev?ev.name:'Kein Event')+(mems.length>1?' ▾':'')+dot;
   if(dot)btn.style.color='var(--red)';else btn.style.color='var(--tan)';
+  var badge=document.getElementById('event-code-badge');if(badge)badge.textContent=ev?ev.code:'';
 }
 function toggleEventDropdown(){
   var mems=userMemberships[currentUserId]||[];if(mems.length<=1)return;
@@ -701,9 +721,11 @@ function fetchBggCollection(username,attempt,evId,status){
       var complexity=null;
       var wAvgEl=item.querySelector('averageweight');
       if(wAvgEl)complexity=Math.round(parseFloat(wAvgEl.getAttribute('value'))*10)/10;
+      var thumbEl=item.querySelector('thumbnail');
+      var img=thumbEl?thumbEl.textContent.trim():'';
       var alreadyIn=existing.some(function(g){return g.bgg===bggUrl||(g.name.toLowerCase()===name.toLowerCase());});
       if(alreadyIn){skipped++;return;}
-      var g={id:'g'+Date.now()+Math.random().toString(36).slice(2,6),name:name,bgg:bggUrl,
+      var g={id:'g'+Date.now()+Math.random().toString(36).slice(2,6),name:name,bgg:bggUrl,img:img,
         complexity:complexity,players:players,duration:duration,
         wish:false,ignored:false,interested:me?[me]:[],explainers:[],suppliers:me?[me]:[],
         erkTime:duration||60,ts:Date.now()};
@@ -895,8 +917,9 @@ function sortGames(arr){
 }
 function switchListTab(tab){
   currentListTab=tab;
-  document.querySelectorAll('#list-tabs .tab').forEach(function(t){t.classList.remove('active');});
-  var el=document.querySelector('#list-tabs [data-tab="'+tab+'"]');if(el)el.classList.add('active');
+  ['all','mine','shortage','wish'].forEach(function(t){
+    var b=document.getElementById('tab-btn-'+t);if(b)b.classList.toggle('active',t===tab);
+  });
   renderGameList();
 }
 function toggleIgnored(){
@@ -908,58 +931,99 @@ function toggleIgnored(){
 function renderGameList(){
   var me=ME(),games=currentGames();
   var allG=games.filter(function(g){return!g.wish;}),wishG=games.filter(function(g){return g.wish;});
-  var cnt=document.getElementById('tab-all-count');if(cnt)cnt.textContent=allG.length;
-  var wcnt=document.getElementById('tab-wish-count');if(wcnt)wcnt.textContent=wishG.length;
-  var myNames=allG.filter(function(g){return me&&g.suppliers.indexOf(me)>=0;}).map(function(g){return g.name.toLowerCase();});
-  var wd=document.getElementById('wish-dot');if(wd)wd.style.display=wishG.some(function(g){return myNames.indexOf(g.name.toLowerCase())>=0;})?'inline-block':'none';
-  var filtered=currentListTab==='wish'?wishG:allG;
+  var wd=document.getElementById('wish-dot');if(wd)wd.style.display=wishG.length?'inline-block':'none';
+  var filtered;
+  if(currentListTab==='wish'){filtered=wishG;}
+  else if(currentListTab==='mine'){filtered=allG.filter(function(g){return me&&g.interested.indexOf(me)>=0;});}
+  else if(currentListTab==='shortage'){filtered=allG.filter(function(g){return!g.ignored&&(!g.explainers.length||!g.suppliers.length);});}
+  else{filtered=allG;}
   if(currentListTab!=='wish'&&!showIgnored)filtered=filtered.filter(function(g){return!g.ignored;});
   filtered=sortGames(filtered);
   var el=document.getElementById('game-list');if(!el)return;
   if(!filtered.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele</div>';updateInboxDot();return;}
   el.innerHTML=filtered.map(function(g){return renderGameCard(g,false,controlMode==='swipe'?'l-'+g.id:null);}).join('');
+  filtered.forEach(function(g){
+    var card=document.querySelector('.game-card[data-id="'+g.id+'"]');
+    if(card&&!card.dataset.detail){card.dataset.detail='1';card.addEventListener('click',function(e){if(!e.target.closest('button')&&!e.target.closest('a')&&!e.target.closest('select')){openDetail(g.id,'list');}});}
+  });
   if(controlMode==='swipe')filtered.forEach(function(g){attachSw('l-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);},ignoreGame);});
   updateInboxDot();updateEventTitle();
 }
 
+function bggThumb(g){
+  if(g.img)return g.img;
+  if(g.bgg){var m=g.bgg.match(/boardgame\/(\d+)/);if(m)return'https://cf.geekdo-images.com/thumb/img/'+m[1];}
+  return'';
+}
 function renderGameCard(g,inInbox,swipeKey){
   var me=ME(),amInt=me&&g.interested.indexOf(me)>=0,amExp=me&&g.explainers.indexOf(me)>=0;
   var participants=currentParticipants();
+  var noExp=!g.explainers.length&&!g.wish;
+  var noSup=!g.suppliers.length&&!g.wish;
+  // warning line above name
+  var warnings=[];
+  if(noExp)warnings.push('<span style="color:var(--red);font-size:11px">Kein Erklärer</span>');
+  if(noSup)warnings.push('<span style="color:var(--red);font-size:11px">Kein Lieferant</span>');
+  var warnHtml=warnings.length?'<div style="margin-bottom:2px">'+warnings.join('<span style="color:var(--muted);font-size:11px"> · </span>')+'</div>':'';
+  // info line
+  var infoParts=[];
+  if(g.players)infoParts.push(g.players+' Sp.');
+  if(g.duration)infoParts.push(g.duration+' Min');
+  if(g.complexity)infoParts.push('Weight '+g.complexity);
+  var infoLine=infoParts.join(' · ');
+  // tags
   var tags='';
-  if(g.complexity)tags+='<span class="tag">'+ic('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',10)+' '+g.complexity+'</span>';
-  if(g.players)tags+='<span class="tag">'+ic('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',10)+' '+g.players+'</span>';
-  if(g.duration)tags+='<span class="tag">'+ic('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',10)+' '+g.duration+'min</span>';
-  if(amInt&&!amExp)tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green)">'+ic('<circle cx="12" cy="12" r="9"/>',10)+' Interesse</span>';
-  if(amExp)tags+='<span class="tag yellow">'+ic('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',10)+' Erklärer</span>';
-  if(g.ignored)tags+='<span class="tag" style="opacity:.5">ausgeblendet</span>';
-  var nameLink=g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>':escHtml(g.name);
-  var btnHtml='';
-  if(controlMode==='button'){
-    btnHtml='<div class="btn-row">';
-    btnHtml+='<button class="btn btn-sm '+(amInt?'btn-primary':'btn-ghost')+'" onclick="toggleInterest(\''+g.id+'\')">'+(amInt?'&#9733;':ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',13))+' Interesse</button>';
-    if(inInbox)btnHtml+='<button class="btn btn-sm btn-ghost" onclick="ignoreGame(\''+g.id+'\')">Ausblenden</button>';
-    if(!amExp&&me)btnHtml+='<button class="btn btn-sm btn-ghost" onclick="addExplainer(\''+g.id+'\')">Ich erkläre</button>';
-    if(amExp)btnHtml+='<button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">Austragen</button>';
-    if(g.wish&&me&&!g.ignored)btnHtml+='<button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">Wunsch erfüllen</button>';
-    btnHtml+='</div>';
-  }else if(g.wish&&me){
-    btnHtml='<div class="btn-row"><button class="btn btn-sm btn-primary" onclick="fulfillWish(\''+g.id+'\')">Wunsch erfüllen</button></div>';
+  if(g.interested.length){
+    var intStyle=amInt?'background:rgba(90,158,111,.2);color:var(--green);':'background:#333;color:var(--muted);';
+    tags+='<span class="tag" style="'+intStyle+'">'+g.interested.length+' Interessenten</span>';
   }
-  var infoHtml='';
-  if(g.explainers.length){var exN=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});infoHtml+='<div style="font-size:11px;color:var(--yellow);margin-top:4px">Erklärer: '+exN.join(', ')+'</div>';}
-  else if(me&&!g.wish){infoHtml+='<div style="font-size:11px;color:var(--red);margin-top:4px">Kein Erklärer registriert</div>';}
-  if(g.suppliers.length){var supN=g.suppliers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});infoHtml+='<div style="font-size:11px;color:var(--muted);margin-top:2px">Mitbringer: '+supN.join(', ')+'</div>';}
-  var accentColor=amExp?'var(--yellow)':amInt?'var(--green)':'';
-  var accentStyle=accentColor?'border-left:3px solid '+accentColor+';':'border-left:3px solid transparent;';
-  var cardInner='<div class="game-card-inner"><div style="font-size:14px;font-weight:600">'+nameLink+'</div><div class="game-tags">'+tags+'</div>'+infoHtml+btnHtml+'</div>';
+  if(g.explainers.length){
+    var exN=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?(pid===me?'Du erklärst':p.name+' erklärt'):pid;});
+    var exStyle=amExp?'background:rgba(212,160,23,.2);color:var(--yellow);':'background:rgba(184,160,130,.15);color:var(--tan);';
+    tags+='<span class="tag" style="'+exStyle+'">'+exN[0]+'</span>';
+  }
+  if(g.ignored)tags+='<span class="tag" style="opacity:.5">Ignoriert</span>';
+  if(g.wish)tags+='<span class="tag tan">Wunsch</span>';
+  // right status icon
+  var rightIcon,rightColor;
+  if(!g.explainers.length&&!g.wish){
+    rightIcon=ic('<path d="M12 2c5.52 0 10 4.48 10 10S17.52 22 7 22c-1.7 0-3.37-.26-4.96-.75 0 0-1.04-.35-1.04-1.25s1-1.25 1-1.25C3.69 18.16 6 15.27 6 12 6 6.48 10.48 2 12 2zm0 4l-1.5 3-3.5.5 2.5 2.5-.5 3.5L12 14l3 1.5-.5-3.5 2.5-2.5-3.5-.5L12 6z"/>',22);
+    rightIcon=ic('<path d="M13 10V3L4 14h7v7l9-11h-7z"/>',22);
+    rightColor='var(--yellow)';
+  }else if(amExp){
+    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
+    rightColor='var(--muted)';
+  }else if(amInt){
+    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
+    rightColor='var(--green)';
+  }else{
+    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
+    rightColor='#444';
+  }
+  // cover image
+  var thumb=bggThumb(g);
+  var imgHtml=thumb
+    ?'<img class="game-card-cover" src="'+thumb+'" onerror="this.style.display=\'none\'" alt="">'
+    :'<div class="game-card-cover-ph">'+ic('<rect x="3" y="3" width="18" height="18" rx="3"/>',22)+'</div>';
+  var cardInner=
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;">'+
+      imgHtml+
+      '<div style="flex:1;min-width:0;">'+
+        warnHtml+
+        '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:1px">'+escHtml(g.name)+'</div>'+
+        (infoLine?'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">'+infoLine+'</div>':'')+
+        (tags?'<div class="game-tags">'+tags+'</div>':'')+
+      '</div>'+
+      '<div style="color:'+rightColor+';flex-shrink:0;padding-left:4px">'+rightIcon+'</div>'+
+    '</div>';
   if(controlMode==='swipe'&&swipeKey){
-    return'<div class="swipe-wrap" style="margin-bottom:10px">'+
+    return'<div class="swipe-wrap" style="margin-bottom:8px">'+
       '<div class="wagon wagon-hide">Ignorieren</div>'+
       '<div class="wagon wagon-interest" id="wi-'+swipeKey+'">Interesse</div>'+
       '<div class="wagon wagon-explain" id="we-'+swipeKey+'">Erklärer</div>'+
-      '<div class="game-card" id="sc-'+swipeKey+'" style="'+accentStyle+'">'+cardInner+'</div></div>';
+      '<div class="game-card" id="sc-'+swipeKey+'" style="cursor:pointer">'+cardInner+'</div></div>';
   }
-  return'<div class="game-card" data-id="'+g.id+'" style="'+accentStyle+'">'+cardInner+'</div>';
+  return'<div class="game-card" data-id="'+g.id+'" style="cursor:pointer">'+cardInner+'</div>';
 }
 
 // ============================================================
@@ -987,6 +1051,78 @@ function addGame(){
 }
 
 // ============================================================
+// DETAIL PAGE
+// ============================================================
+var detailReturnScreen='list';
+function openDetail(gid,fromScreen){
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  detailReturnScreen=fromScreen||'list';
+  var lbl=document.getElementById('detail-back-label');
+  if(lbl)lbl.textContent=fromScreen==='list'?'Spieleliste':fromScreen==='inbox'?'Inbox':'Zurück';
+  var back=document.getElementById('back-detail');
+  if(back)back.innerHTML=ICO.back;
+  renderDetail(g);
+  showScreen('detail');
+}
+function goBackFromDetail(){showScreen(detailReturnScreen);}
+function renderDetail(g){
+  var el=document.getElementById('detail-scroll');if(!el)return;
+  var me=ME(),amInt=me&&g.interested.indexOf(me)>=0,amExp=me&&g.explainers.indexOf(me)>=0;
+  var participants=currentParticipants();
+  var thumb=bggThumb(g);
+  var imgHtml=thumb
+    ?'<img class="detail-img" src="'+thumb+'" onerror="this.parentNode.replaceChild(phNode(),this)" alt="">'
+    :'<div class="detail-img-ph">'+ic('<rect x="3" y="3" width="18" height="18" rx="3"/>',32)+'</div>';
+  var infoParts=[];
+  if(g.players)infoParts.push(g.players+' Spieler');
+  if(g.duration)infoParts.push(g.duration+' Min');
+  if(g.complexity)infoParts.push('Weight '+g.complexity);
+  var bggLink=g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--tan);font-size:12px;display:inline-flex;align-items:center;gap:3px;text-decoration:none">BGG-Seite '+ic('<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',12)+'</a>':'';
+  // explainer select
+  var pOpts='<option value="">niemand</option>'+participants.map(function(p){return'<option value="'+p.id+'"'+(g.explainers.indexOf(p.id)>=0?' selected':'')+'>'+escHtml(p.name)+(p.id===me?' (du)':'')+'</option>';}).join('');
+  var erkHtml='<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Erklärer</div>'+
+    '<select onchange="setDetailExplainer(\''+g.id+'\',this.value)" style="background:var(--card);font-size:13px">'+pOpts+'</select></div>';
+  // supplier
+  var sOpts='<option value="">niemand</option>'+participants.map(function(p){return'<option value="'+p.id+'"'+(g.suppliers.indexOf(p.id)>=0?' selected':'')+'>'+escHtml(p.name)+(p.id===me?' (du)':'')+'</option>';}).join('');
+  var supHtml='<div style="margin-bottom:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Lieferant</div>'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+    '<select onchange="setDetailSupplier(\''+g.id+'\',this.value)" style="background:var(--card);font-size:13px;flex:1">'+sOpts+'</select>'+
+    (!g.suppliers.length?'<button class="btn btn-sm btn-ghost" onclick="setDetailSupplier(\''+g.id+'\',\''+me+'\')" style="white-space:nowrap">+ Ich bringe es mit</button>':'')+
+    '</div></div>';
+  // interested chips
+  var chipHtml=g.interested.map(function(pid){
+    var p=participants.find(function(x){return x.id===pid;});if(!p)return'';
+    var isMe=pid===me;
+    return'<span class="participant-chip" style="background:'+p.color+'22;color:'+p.color+'">'+(p.initials||p.name.slice(0,2).toUpperCase())+' '+escHtml(p.name)+(isMe?' (du)':'')+'</span>';
+  }).join('');
+  var intHtml='<div style="margin-bottom:16px"><div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:8px">Interessenten '+g.interested.length+'</div><div>'+chipHtml+'</div></div>';
+  var actionHtml='<div class="btn-row">';
+  if(amInt)actionHtml+='<button class="btn btn-ghost" style="flex:1" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Interesse zurückziehen</button>';
+  else actionHtml+='<button class="btn btn-primary" style="flex:1" onclick="toggleInterest(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Interesse anmelden</button>';
+  if(g.wish&&me)actionHtml+='<button class="btn btn-primary" style="flex:1" onclick="fulfillWish(\''+g.id+'\');renderDetail(currentGames().find(function(x){return x.id===\''+g.id+'\';}))">Wunsch erfüllen</button>';
+  actionHtml+='</div>';
+  el.innerHTML=
+    '<div style="display:flex;gap:12px;align-items:flex-start;padding:16px">'+
+      imgHtml+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">'+escHtml(g.name)+'</div>'+
+        (infoParts.length?'<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+infoParts.join(' · ')+'</div>':'')+
+        (bggLink?'<div style="margin-bottom:4px">'+bggLink+'</div>':'')+
+      '</div>'+
+    '</div>'+
+    (g.desc?'<div class="detail-desc" style="padding:0 16px 12px">'+escHtml(g.desc)+'</div>':'')+
+    '<div style="padding:0 16px">'+erkHtml+supHtml+intHtml+actionHtml+'</div>';
+}
+function setDetailExplainer(gid,pid){
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  g.explainers=pid?[pid]:[];renderDetail(g);renderAll();
+}
+function setDetailSupplier(gid,pid){
+  var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;
+  g.suppliers=pid?[pid]:[];renderDetail(g);renderAll();
+}
+
+// ============================================================
 // INBOX
 // ============================================================
 function renderInbox(){
@@ -995,6 +1131,10 @@ function renderInbox(){
   if(!games.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px">Keine neuen Spiele in der Inbox</div>';return;}
   var hint=controlMode==='swipe'?'<div class="swipe-hint">Rechts swipen: Interesse &nbsp;|&nbsp; Links swipen: Ignorieren</div>':'';
   el.innerHTML=hint+games.map(function(g){return renderGameCard(g,true,controlMode==='swipe'?'i-'+g.id:null);}).join('');
+  games.forEach(function(g){
+    var card=document.querySelector('.game-card[data-id="'+g.id+'"]');
+    if(card&&!card.dataset.detail){card.dataset.detail='1';card.addEventListener('click',function(e){if(!e.target.closest('button')&&!e.target.closest('a')&&!e.target.closest('select')){openDetail(g.id,'inbox');}});}
+  });
   if(controlMode==='swipe')games.forEach(function(g){attachSw('i-'+g.id,g.id,function(gid,wE){toggleInterest(gid);if(wE)addExplainer(gid);},ignoreGame);});
 }
 

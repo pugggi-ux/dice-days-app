@@ -1370,6 +1370,7 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
   var bggImg=g.bgg?g.bgg.replace(/.*boardgame\/(\d+).*/,'https://cf.geekdo-images.com/thumb/img/$1'):'';
   var imgHtml='';
   var curScr=currentScreen||'list';
+  var ratio=g.sweetspot?g.interested.length/g.sweetspot:0;
   return'<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer" onclick="if(!event.target.closest(\'button\')&&!event.target.closest(\'a\')){openDetail(\''+g.id+'\',\''+curScr+'\');}">'+
     (imgHtml)+
     '<div style="flex:1;min-width:0">'+
@@ -1378,7 +1379,10 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
       '<div class="game-tags" style="margin-top:5px">'+tags+'</div>'+
       (extraBtns?'<div class="btn-row" onclick="event.stopPropagation()">'+extraBtns+'</div>':'')+
     '</div>'+
-    '<div style="color:'+rightColor+';flex-shrink:0;display:flex;align-items:center">'+rightIcon+'</div>'+
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0">'+
+      ssSVG(ratio,26)+
+      '<div style="color:'+rightColor+';display:flex;align-items:center">'+rightIcon+'</div>'+
+    '</div>'+
   '</div>';
 }
 function renderMit(){
@@ -1425,6 +1429,18 @@ function renderPackliste(){
     html+='<div class="sec-hdr">Allgemeine Liste</div><div class="card">';
     ev.genericPacklist.forEach(function(item,i){html+='<div class="pack-item" id="gpack-'+i+'"><input type="checkbox" onchange="toggleGenericPack('+i+',this)"><span>'+escHtml(item)+'</span></div>';});
     html+='</div>';
+  }
+  var evId=currentEventId();
+  var mySupplierGames=(eventGames[evId]||[]).filter(function(g){return me&&g.suppliers&&g.suppliers.indexOf(me)>=0;});
+  if(mySupplierGames.length){
+    html+='<div class="sec-hdr">Spiele die ich mitbringe</div>';
+    mySupplierGames.forEach(function(g){
+      var ratio=g.sweetspot?g.interested.length/g.sweetspot:0;
+      html+='<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer" onclick="openDetail(\''+g.id+'\',\'pack\')">'+
+        '<div style="flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(gameName(g))+'</div>'+
+        ssSVG(ratio,26)+
+      '</div>';
+    });
   }
   var myItems=items.filter(function(it){return it.participantId===me;});
   var visItems=hideDonePackItems?myItems.filter(function(it){return!it.checked;}):myItems;

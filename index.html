@@ -593,19 +593,17 @@ var users = [
   {id:'u2', name:'Matthias', password:'qwertzu', initials:'MA', color:'#7B9E87'},
 ];
 var currentUserId = 'u1';
-var userMemberships = {'u1':['ev2','ev1'], 'u2':[]};
-var userActiveEvent = {'u1':'ev2', 'u2':null};
-var userParticipantIds = {'u1':{'ev1':'p-me','ev2':'p-me'}};
+var userMemberships = {'u1':['ev1'], 'u2':[]};
+var userActiveEvent = {'u1':'ev1', 'u2':null};
+var userParticipantIds = {'u1':{'ev1':'p-me'}};
 var userSchedules = {
   'u1':{'ev1':{arrivalDate:'2025-07-18',arrivalTime:'16:00',departureDate:'2025-07-20',departureTime:'11:00',sleepStart:'03:00',sleepEnd:'08:00',saved:true}}
 };
 var allEvents = [
-  {id:'ev1',name:'Dice Days 12',code:'ABC123',password:null,joinCode:'DD11',joinPassword:'brett2024',arrivalDate:'2025-07-18',arrivalTime:'15:00',departureDate:'2025-07-20',departureTime:'12:00',genericPacklist:['Schlafsack','Kopfkissen','Handtuch','Zahnbürste','Hausschuhe','Snacks & Getränke','Würfel'],hasBuffet:true,payAmount:'35€',paypalLink:'https://paypal.me/demo'},
-  {id:'ev2',name:'Dice Days 11',code:'KXMP7Q',password:'1234',arrivalDate:'2024-07-19',arrivalTime:'15:00',departureDate:'2024-07-21',departureTime:'12:00',genericPacklist:['Hausschuhe','Snacks & Getränke'],hasBuffet:false,payAmount:'30€',paypalLink:'https://paypal.me/demo'},
+  {id:'ev1',name:'Dice Days 11',code:'DD11',password:'brett2024',joinCode:'DD11',joinPassword:'brett2024',arrivalDate:'2025-07-18',arrivalTime:'15:00',departureDate:'2025-07-20',departureTime:'12:00',genericPacklist:['Schlafsack','Kopfkissen','Handtuch','Zahnbürste','Hausschuhe','Snacks & Getränke','Würfel'],hasBuffet:true,payAmount:'35€',paypalLink:'https://paypal.me/demo'},
 ];
 var eventGames = {
-  'ev1':[],
-  'ev2':[
+  'ev1':[
     {id:'g1',name:'Twilight Imperium 4',nameDe:'Twilight Imperium: Vierte Edition',img:'https://m.media-amazon.com/images/I/71E6iBwlq+L._AC_SL1000_.jpg',bgg:'https://boardgamegeek.com/boardgame/233078',complexity:4.3,players:'3–6',sweetspot:6,duration:480,interaction:'komp',wish:false,ignored:false,interested:['p-me','p2'],explainers:['p2'],suppliers:['p2'],erkTime:480,ts:1700000001,desc:'Episches Space-Opera-Strategiespiel um galaktische Vorherrschaft. Allianzen, Verrat und epische Schlachten über viele Stunden.'},
     {id:'g2',name:'Wingspan',nameDe:'Flügelschlag',img:'https://m.media-amazon.com/images/I/815tajlaaNL._AC_SL1500_.jpg',bgg:'https://boardgamegeek.com/boardgame/266192',complexity:2.4,players:'1–5',sweetspot:4,duration:70,interaction:'komp',wish:false,ignored:false,interested:['p-me'],explainers:['p-me'],suppliers:['p-me'],erkTime:70,ts:1700000002,desc:'Vogelbeobachtungs-Engine-Building-Spiel. Karten spielen, Eier legen, Vögel in die Volieren locken.'},
     {id:'g3',name:'Dune: Imperium',nameDe:'Dune: Imperium',img:'https://www.system-matters.de/wp-content/uploads/Spiel-44-1.png',bgg:'https://boardgamegeek.com/boardgame/316554',complexity:3.0,players:'1–4',sweetspot:4,duration:120,interaction:'semi',wish:false,ignored:false,interested:['p2','p3'],explainers:[],suppliers:['p3'],erkTime:60,ts:1700000003,desc:'Deck-Building trifft Worker Placement im Universum von Dune. Intrigen, Fraktionen und der Kampf um Spice Melange.'},
@@ -616,12 +614,10 @@ var eventGames = {
   ]
 };
 var eventParticipants = {
-  'ev1':[],
-  'ev2':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}]
+  'ev1':[{id:'p-me',name:'Denis',color:'#B8A082'},{id:'p2',name:'Anna',color:'#7B9E87'},{id:'p3',name:'Tom',color:'#9E7B8A'},{id:'p4',name:'Julia',color:'#7B8E9E'}]
 };
 var eventPackItems = {
-  'ev1':[],
-  'ev2':[
+  'ev1':[
     {id:'pk1',participantId:'p-me',text:'Catan',type:'game',checked:false},
     {id:'pk2',participantId:'p-me',text:'Würfel-Set',type:'supply',checked:false},
     {id:'pk3',participantId:'p2',text:'Tacos & Salsa',type:'food',checked:true},
@@ -630,10 +626,9 @@ var eventPackItems = {
     {id:'pk6',participantId:'p4',text:'Hausschuhe extra',type:'personal',checked:false},
   ]
 };
-var eventPayments = {'ev1':{},'ev2':{'p-me':false,'p2':true,'p3':false,'p4':true}};
+var eventPayments = {'ev1':{'p-me':false,'p2':true,'p3':false,'p4':true}};
 var eventTrades = {
-  'ev1':[],
-  'ev2':[
+  'ev1':[
     {id:'tr1',fromId:'p-me',toId:'p2',item:'Wingspan Promo Pack',status:'packed'},
     {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'packed'},
   ]

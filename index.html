@@ -130,6 +130,11 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 .inline-add input{flex:1}
 /* VP code */
 .vp-code{font-size:11px;background:#333;padding:2px 6px;border-radius:4px;font-family:monospace;letter-spacing:1px;color:var(--tan)}
+/* Avatar dropdown */
+.avatar-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;text-align:left}
+.avatar-menu-item:hover{background:#333}
+.avatar-menu-item:first-child{border-radius:10px 10px 0 0}
+.avatar-menu-item:last-child{border-radius:0 0 10px 10px}
 /* Admin tabs */
 .admin-tabs{display:flex;border-bottom:1px solid #333;margin-bottom:12px;overflow-x:auto}
 .admin-tab{flex:1;min-width:70px;padding:8px 4px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
@@ -160,10 +165,52 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   </div>
 </div>
 
+<!-- AVATAR DROPDOWN -->
+<div id="avatar-dropdown" style="display:none;position:absolute;top:52px;right:12px;z-index:200;background:var(--surface);border:1px solid #444;border-radius:10px;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,.4)">
+  <button class="avatar-menu-item" onclick="closeAvatarMenu();showScreen('admin')">
+    <span id="ami-settings"></span>Admin-Bereich
+  </button>
+  <button class="avatar-menu-item" onclick="closeAvatarMenu();openSettingsOverlay()">
+    <span id="ami-tune"></span>Einstellungen
+  </button>
+  <div style="border-top:1px solid #333;margin:2px 0"></div>
+  <button class="avatar-menu-item" onclick="closeAvatarMenu();openUserOverlay()">
+    <span id="ami-users"></span>Benutzer wechseln
+  </button>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="overlay" id="settings-overlay">
+  <div class="overlay-box">
+    <h3>Einstellungen</h3>
+    <div class="toggle-row">
+      <span style="font-size:13px;color:var(--text)">Dark Mode</span>
+      <label class="toggle-switch"><input type="checkbox" id="dark-mode-toggle" checked onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size:13px;color:var(--text)">Button-Modus</span>
+      <label class="toggle-switch"><input type="checkbox" id="settings-control-toggle" checked onchange="controlMode=this.checked?'button':'swipe';updateModeBtn();renderAll()"><span class="toggle-slider"></span></label>
+    </div>
+    <div style="border-top:1px solid #333;margin-top:14px;padding-top:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Meine BGG-Collection</div>
+      <label>BGG-Benutzername</label>
+      <input id="bgg-username" placeholder="dein BGG-Username">
+      <label>BGG-Passwort (optional, für private Collections)</label>
+      <div style="position:relative">
+        <input id="bgg-password" type="password" placeholder="Passwort">
+        <button id="bgg-eye-btn" onclick="toggleBggPw()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:flex;align-items:center"></button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="syncBggCollection()">Collection synchronisieren</button>
+      <div id="bgg-sync-status" style="font-size:11px;color:var(--muted);margin-top:6px;text-align:center"></div>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:14px" onclick="closeOverlay('settings-overlay')">Schließen</button>
+  </div>
+</div>
+
 <!-- USER OVERLAY -->
 <div class="overlay" id="user-overlay">
   <div class="overlay-box">
-    <h3>Benutzer</h3>
+    <h3>Benutzer wechseln</h3>
     <div id="user-list-ul"></div>
     <div style="margin-top:14px;border-top:1px solid #333;padding-top:12px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Neuen Benutzer anlegen</div>
@@ -220,7 +267,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-list"></button>
-    <button class="avatar-btn" id="avatar-list" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
     <div class="event-dropdown" id="event-dropdown"></div>
   </div>
   <div class="bottom-nav" id="bottom-nav">
@@ -249,7 +296,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
       <option value="duration">Spielzeit</option>
     </select>
     <button class="icon-btn" id="eye-btn" onclick="toggleIgnored()" title="Ignorierte ein-/ausblenden" style="color:var(--tan)"></button>
-    <button class="icon-btn" id="mode-toggle-btn" onclick="toggleControlMode()" title="Steuerungsmodus wechseln" style="color:var(--muted)"></button>
   </div>
   <div class="scroll-area" id="game-list-scroll">
     <div id="game-list"></div>
@@ -263,7 +309,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <span class="app-bar-title" style="cursor:default">Inbox</span>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-inbox"></button>
-    <button class="avatar-btn" id="avatar-inbox" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-inbox" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area">
     <div class="time-bar-wrap" id="inbox-timebar"></div>
@@ -276,7 +322,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <span class="app-bar-title" style="cursor:default">Mitspielen</span>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-mit"></button>
-    <button class="avatar-btn" id="avatar-mit" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-mit" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area">
     <div class="time-bar-wrap" id="mit-timebar"></div>
@@ -289,7 +335,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <span class="app-bar-title" style="cursor:default">Erklären</span>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-erk"></button>
-    <button class="avatar-btn" id="avatar-erk" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-erk" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area">
     <div class="time-bar-wrap" id="erk-timebar"></div>
@@ -302,7 +348,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <span class="app-bar-title" style="cursor:default">Packliste</span>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-pack"></button>
-    <button class="avatar-btn" id="avatar-pack" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-pack" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area" id="pack-scroll"></div>
 </div>
@@ -312,7 +358,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <span class="app-bar-title" style="cursor:default">Mitbringbuffet</span>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-buffet"></button>
-    <button class="avatar-btn" id="avatar-buffet" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-buffet" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area" id="buffet-list"></div>
 </div>
@@ -322,7 +368,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="app-bar">
     <button class="icon-btn" onclick="showScreen('list')" title="Zurück" id="back-admin"></button>
     <span class="app-bar-title" style="cursor:default">Admin</span>
-    <button class="avatar-btn" id="avatar-admin" onclick="openUserOverlay()">DE</button>
+    <button class="avatar-btn" id="avatar-admin" onclick="openAvatarMenu(event)">DE</button>
   </div>
   <div class="scroll-area" id="admin-scroll"></div>
 </div>
@@ -372,6 +418,10 @@ function initIcons(){
   var ba=ICO.back;
   var bel=document.getElementById('back-admin');if(bel)bel.innerHTML=ba;
   var eyeEl=document.getElementById('eye-btn');if(eyeEl)eyeEl.innerHTML=ICO.eye;
+  var bggEye=document.getElementById('bgg-eye-btn');if(bggEye)bggEye.innerHTML=ICO.eye;
+  var amiS=document.getElementById('ami-settings');if(amiS)amiS.innerHTML=ICO.settings;
+  var amiT=document.getElementById('ami-tune');if(amiT)amiT.innerHTML=ic('<line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>');
+  var amiU=document.getElementById('ami-users');if(amiU)amiU.innerHTML=ICO.users;
   updateModeBtn();
 }
 function updateModeBtn(){
@@ -388,6 +438,10 @@ function updateModeBtn(){
   }
 }
 function toggleControlMode(){controlMode=(controlMode==='button')?'swipe':'button';updateModeBtn();renderAll();}
+function updateSettingsToggles(){
+  var ct=document.getElementById('settings-control-toggle');if(ct)ct.checked=(controlMode==='button');
+  var dt=document.getElementById('dark-mode-toggle');if(dt)dt.checked=darkMode;
+}
 
 // ============================================================
 // STATE
@@ -557,6 +611,113 @@ function toggleEventDropdown(){
   }
 }
 function switchEvent(evId){userActiveEvent[currentUserId]=evId;document.getElementById('event-dropdown').classList.remove('show');renderAll();}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+var darkMode=true;
+function toggleDarkMode(on){
+  darkMode=on;
+  document.documentElement.classList.toggle('light',!on);
+  document.body.classList.toggle('light',!on);
+  var tog=document.getElementById('dark-mode-toggle');if(tog)tog.checked=on;
+}
+
+// ============================================================
+// AVATAR DROPDOWN
+// ============================================================
+function openAvatarMenu(e){
+  e.stopPropagation();
+  var menu=document.getElementById('avatar-dropdown');
+  var isOpen=menu.style.display==='block';
+  menu.style.display=isOpen?'none':'block';
+  var btn=e.currentTarget;
+  var rect=btn.getBoundingClientRect();
+  var appRect=document.getElementById('app').getBoundingClientRect();
+  menu.style.top=(rect.bottom-appRect.top+4)+'px';
+  menu.style.right=(appRect.right-rect.right)+'px';
+}
+function closeAvatarMenu(){document.getElementById('avatar-dropdown').style.display='none';}
+document.addEventListener('click',function(){closeAvatarMenu();});
+
+// ============================================================
+// SETTINGS OVERLAY
+// ============================================================
+function openSettingsOverlay(){
+  updateSettingsToggles();
+  showOverlay('settings-overlay');
+}
+function toggleBggPw(){
+  var inp=document.getElementById('bgg-password');
+  var btn=document.getElementById('bgg-eye-btn');
+  var show=inp.type==='password';
+  inp.type=show?'text':'password';
+  btn.innerHTML=show?ICO.eyeoff:ICO.eye;
+}
+
+// ============================================================
+// BGG COLLECTION SYNC
+// ============================================================
+var userBggSettings={};
+function syncBggCollection(){
+  var username=document.getElementById('bgg-username').value.trim();
+  if(!username){alert('Bitte BGG-Benutzernamen eingeben');return;}
+  var evId=currentEventId();if(!evId)return;
+  var status=document.getElementById('bgg-sync-status');
+  status.textContent='Verbinde mit BGG...';
+  status.style.color='var(--muted)';
+  userBggSettings[currentUserId]={username:username};
+  fetchBggCollection(username,0,evId,status);
+}
+function fetchBggCollection(username,attempt,evId,status){
+  var url='https://boardgamegeek.com/xmlapi2/collection?username='+encodeURIComponent(username)+'&own=1&excludesubtype=boardgameexpansion&stats=1';
+  fetch(url).then(function(r){
+    if(r.status===202){
+      if(attempt<5){
+        status.textContent='BGG bereitet Daten vor… ('+(attempt+1)+'/5)';
+        setTimeout(function(){fetchBggCollection(username,attempt+1,evId,status);},3000+attempt*2000);
+      }else{status.textContent='Timeout – bitte erneut versuchen.';status.style.color='var(--red)';}
+      return;
+    }
+    if(!r.ok){status.textContent='Fehler: '+r.status;status.style.color='var(--red)';return;}
+    return r.text();
+  }).then(function(xml){
+    if(!xml)return;
+    var parser=new DOMParser(),doc=parser.parseFromString(xml,'text/xml');
+    var items=doc.querySelectorAll('item');
+    var added=0,skipped=0;
+    var existing=eventGames[evId]||[];
+    var me=ME();
+    items.forEach(function(item){
+      var name=(item.querySelector('name')||{}).textContent||'';
+      var bggId=item.getAttribute('objectid');
+      var bggUrl=bggId?'https://boardgamegeek.com/boardgame/'+bggId:'';
+      var playingtime=item.querySelector('stats');
+      var duration=playingtime?parseInt(playingtime.getAttribute('playingtime'))||null:null;
+      var minp=playingtime?playingtime.getAttribute('minplayers'):'';
+      var maxp=playingtime?playingtime.getAttribute('maxplayers'):'';
+      var players=(minp&&maxp&&minp!==maxp)?minp+'–'+maxp:(minp||'');
+      var avgEl=item.querySelector('average');
+      var complexity=null;
+      var wAvgEl=item.querySelector('averageweight');
+      if(wAvgEl)complexity=Math.round(parseFloat(wAvgEl.getAttribute('value'))*10)/10;
+      var alreadyIn=existing.some(function(g){return g.bgg===bggUrl||(g.name.toLowerCase()===name.toLowerCase());});
+      if(alreadyIn){skipped++;return;}
+      var g={id:'g'+Date.now()+Math.random().toString(36).slice(2,6),name:name,bgg:bggUrl,
+        complexity:complexity,players:players,duration:duration,
+        wish:false,ignored:false,interested:me?[me]:[],explainers:[],suppliers:me?[me]:[],
+        erkTime:duration||60,ts:Date.now()};
+      existing.push(g);added++;
+    });
+    eventGames[evId]=existing;
+    renderAll();
+    status.textContent=added+' Spiele hinzugefügt'+(skipped?' ('+skipped+' bereits vorhanden)':'')+'!';
+    status.style.color='var(--green)';
+  }).catch(function(err){
+    status.textContent='Fehler: '+err.message;
+    status.style.color='var(--red)';
+  });
+}
 
 // ============================================================
 // USER / AVATAR

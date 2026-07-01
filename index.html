@@ -1065,7 +1065,7 @@ function renderGameCard(g,inInbox,swipeKey){
   // tags
   var tags='';
   if(g.interested.length){
-    var intStyle=amInt?'background:rgba(90,158,111,.2);color:var(--green);':'background:rgba(255,255,255,.06);color:var(--muted);';
+    var intStyle=(amInt||amExp)?'background:rgba(90,158,111,.2);color:var(--green);':'background:rgba(255,255,255,.06);color:var(--muted);';
     tags+='<span class="tag" style="'+intStyle+'">'+g.interested.length+' Interesse</span>';
   }
   if(g.explainers.length){
@@ -1118,7 +1118,7 @@ function renderGameCard(g,inInbox,swipeKey){
       '<div class="wagon wagon-hide">Ignorieren</div>'+
       '<div class="wagon wagon-interest" id="wi-'+swipeKey+'">Interesse</div>'+
       '<div class="wagon wagon-explain" id="we-'+swipeKey+'">Erklärer</div>'+
-      '<div class="game-card" id="sc-'+swipeKey+'" style="cursor:pointer">'+cardInner+'</div></div>';
+      '<div class="game-card" id="sc-'+swipeKey+'" data-id="'+g.id+'" style="cursor:pointer">'+cardInner+'</div></div>';
   }
   return'<div class="game-card" data-id="'+g.id+'" style="cursor:pointer">'+cardInner+'</div>';
 }

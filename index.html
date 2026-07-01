@@ -1056,39 +1056,38 @@ var SORT_OPTS=[
   {v:'duration',   label:'Spielzeit',      badge:'clock'},
   {v:'interaction',label:'Koop / Semi / Komp', badge:'gear'},
 ];
-function sortBadgeSvg(badge,x,y,s){
-  // returns SVG content for the badge at position (x,y) scaled by s (default 1)
-  s=s||1;
+function sortBadgeContent(badge){
+  // All badges rendered in a 24x24 local coordinate space, centered at 12,12
   if(badge==='person')
-    return'<circle cx="'+(x)+'" cy="'+(y-2.5*s)+'" r="'+(2.5*s)+'" fill="var(--tan)" stroke="none"/>'+
-           '<path d="M'+(x-4*s)+' '+(y+5*s)+'c0-'+(2.2*s)+' '+(1.8*s)+'-'+(4*s)+' '+(4*s)+'-'+(4*s)+'s'+(4*s)+' '+(1.8*s)+' '+(4*s)+' '+(4*s)+'" fill="var(--tan)" stroke="none"/>';
+    return'<circle cx="12" cy="9" r="4" fill="var(--tan)" stroke="none"/>'+
+           '<path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="var(--tan)" stroke="none"/>';
   if(badge==='clock')
-    return'<circle cx="'+x+'" cy="'+y+'" r="'+(4.5*s)+'" fill="var(--tan)" stroke="currentColor" stroke-width="'+(1.5*s)+'" opacity=".8"/>'+
-           '<polyline points="'+x+','+(y-2.5*s)+' '+x+','+y+' '+(x+2*s)+','+(y+1.5*s)+'" stroke="var(--bg)" stroke-width="'+(1.2*s)+'" fill="none"/>';
+    return'<circle cx="12" cy="12" r="8" fill="none" stroke="var(--tan)" stroke-width="2"/>'+
+           '<polyline points="12,7 12,12 15,15" fill="none" stroke="var(--tan)" stroke-width="2" stroke-linecap="round"/>';
   if(badge==='network')
-    return'<circle cx="'+x+'" cy="'+(y-4*s)+'" r="'+(1.5*s)+'" fill="var(--tan)" stroke="none"/>'+
-           '<circle cx="'+(x-3.5*s)+'" cy="'+(y+3*s)+'" r="'+(1.5*s)+'" fill="var(--tan)" stroke="none"/>'+
-           '<circle cx="'+(x+3.5*s)+'" cy="'+(y+3*s)+'" r="'+(1.5*s)+'" fill="var(--tan)" stroke="none"/>'+
-           '<line x1="'+x+'" y1="'+(y-2.5*s)+'" x2="'+(x-3.5*s)+'" y2="'+(y+1.5*s)+'" stroke="var(--tan)" stroke-width="1"/>'+
-           '<line x1="'+x+'" y1="'+(y-2.5*s)+'" x2="'+(x+3.5*s)+'" y2="'+(y+1.5*s)+'" stroke="var(--tan)" stroke-width="1"/>'+
-           '<line x1="'+(x-3.5*s)+'" y1="'+(y+3*s)+'" x2="'+(x+3.5*s)+'" y2="'+(y+3*s)+'" stroke="var(--tan)" stroke-width="1"/>';
+    return'<circle cx="12" cy="4" r="2.5" fill="var(--tan)" stroke="none"/>'+
+           '<circle cx="4" cy="20" r="2.5" fill="var(--tan)" stroke="none"/>'+
+           '<circle cx="20" cy="20" r="2.5" fill="var(--tan)" stroke="none"/>'+
+           '<line x1="12" y1="6.5" x2="4" y2="17.5" stroke="var(--tan)" stroke-width="1.5"/>'+
+           '<line x1="12" y1="6.5" x2="20" y2="17.5" stroke="var(--tan)" stroke-width="1.5"/>'+
+           '<line x1="4" y1="20" x2="20" y2="20" stroke="var(--tan)" stroke-width="1.5"/>';
   if(badge==='gear')
-    return'<circle cx="'+x+'" cy="'+y+'" r="'+(2*s)+'" fill="none" stroke="var(--tan)" stroke-width="'+(1.2*s)+'"/>'+
-           '<circle cx="'+x+'" cy="'+y+'" r="'+(4.5*s)+'" fill="none" stroke="var(--tan)" stroke-width="'+(1.5*s)+'" stroke-dasharray="'+(2.2*s)+' '+(1.4*s)+'"/>';
-  // text badge (123, Az, W)
-  return'<text x="'+x+'" y="'+(y+3*s)+'" text-anchor="middle" fill="var(--tan)" stroke="none" font-size="'+(6*s)+'" font-weight="700" font-family="sans-serif">'+badge.replace(/<[^>]+>/g,'').replace(/tspan[^>]*>/g,'').replace(/font-size="\d+" font-weight="\d+"/g,'')+'</text>';
+    return'<circle cx="12" cy="12" r="3" fill="none" stroke="var(--tan)" stroke-width="1.8"/>'+
+           '<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" fill="none" stroke="var(--tan)" stroke-width="1.8"/>';
+  // text: extract raw text from tspan or use as-is
+  var txt=badge.replace(/<[^>]*>/g,'');
+  return'<text x="12" y="16" text-anchor="middle" fill="var(--tan)" stroke="none" font-size="9" font-weight="800" font-family="sans-serif">'+txt+'</text>';
 }
 function sortIcon(v,sz){
   sz=sz||20;
   var opt=SORT_OPTS.find(function(o){return o.v===v;})||SORT_OPTS[0];
-  var sc=sz/20;
-  // Sort arrows on left half (viewBox 0 0 32 24), badge on right
+  // Two 24x24 cells side by side: arrows left, badge right
   var arrows=
-    '<polyline points="'+(5*sc)+','+(8*sc)+' '+(9*sc)+','+(3*sc)+' '+(13*sc)+','+(8*sc)+'" fill="none" stroke="currentColor" stroke-width="'+(1.8*sc)+'" stroke-linecap="round" stroke-linejoin="round"/>'+
-    '<line x1="'+(9*sc)+'" y1="'+(3*sc)+'" x2="'+(9*sc)+'" y2="'+(21*sc)+'" stroke="currentColor" stroke-width="'+(1.8*sc)+'" stroke-linecap="round"/>'+
-    '<polyline points="'+(5*sc)+','+(16*sc)+' '+(9*sc)+','+(21*sc)+' '+(13*sc)+','+(16*sc)+'" fill="none" stroke="currentColor" stroke-width="'+(1.8*sc)+'" stroke-linecap="round" stroke-linejoin="round"/>';
-  var badge=sortBadgeSvg(opt.badge,22*sc,12*sc,sc);
-  return'<svg width="'+(sz*1.6)+'" height="'+sz+'" viewBox="0 0 '+(32*sc)+' '+(24*sc)+'" fill="none">'+arrows+badge+'</svg>';
+    '<polyline points="5,7 9,3 13,7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'+
+    '<polyline points="5,17 9,21 13,17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  var badge='<g transform="translate(24,0)">'+sortBadgeContent(opt.badge)+'</g>';
+  return'<svg width="'+(sz*2)+'" height="'+sz+'" viewBox="0 0 48 24" fill="none">'+arrows+badge+'</svg>';
 }
 function updateSortBtn(){
   var btn=document.getElementById('sort-btn');if(!btn)return;

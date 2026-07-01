@@ -334,10 +334,8 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="pp-btn" onclick="openPayPal()">PayPal</button>
   </div>
   <div class="tabs" id="list-tabs">
-    <button class="tab active" id="tab-btn-all" onclick="switchListTab('all')">Alle</button>
-    <button class="tab" id="tab-btn-mine" onclick="switchListTab('mine')">Meine</button>
-    <button class="tab" id="tab-btn-shortage" onclick="switchListTab('shortage')">Engpass</button>
-    <button class="tab" id="tab-btn-wish" onclick="switchListTab('wish')">Wunschliste<span id="wish-dot" class="tab-dot" style="display:none"></span></button>
+    <button class="tab active" id="tab-btn-aktiv" onclick="switchListTab('aktiv')">Aktiv <span id="tab-count-aktiv" style="opacity:.6;font-size:11px"></span></button>
+    <button class="tab" id="tab-btn-wish" onclick="switchListTab('wish')">Wunschliste <span id="tab-count-wish" style="opacity:.6;font-size:11px"></span></button>
   </div>
   <div class="sort-bar">
     <select id="sort-select" onchange="renderGameList()">
@@ -583,7 +581,7 @@ var eventTrades = {
 };
 var virtualParticipants=[],banners=[],polls=[];
 var nextBannerId=1,nextPollId=1,nextVpId=1,nextUserId=3;
-var controlMode='swipe',snappedCardId=null,showIgnored=false,currentListTab='all',hideDonePackItems=false,currentScreen='list';
+var controlMode='swipe',snappedCardId=null,showIgnored=false,currentListTab='aktiv',hideDonePackItems=false,currentScreen='list';
 var adminUnlocked=false,adminTab='event',adminBannerTrigger='date',pwOverlayCallback=null;
 
 // ============================================================
@@ -1061,7 +1059,7 @@ function sortGames(arr){
 }
 function switchListTab(tab){
   currentListTab=tab;
-  ['all','mine','shortage','wish'].forEach(function(t){
+  ['aktiv','wish'].forEach(function(t){
     var b=document.getElementById('tab-btn-'+t);if(b)b.classList.toggle('active',t===tab);
   });
   renderGameList();
@@ -1074,14 +1072,12 @@ function toggleIgnored(){
 }
 function renderGameList(){
   var me=ME(),games=currentGames();
-  var allG=games.filter(function(g){return!g.wish;}),wishG=games.filter(function(g){return g.wish;});
-  var wd=document.getElementById('wish-dot');if(wd)wd.style.display=wishG.length?'inline-block':'none';
-  var filtered;
-  if(currentListTab==='wish'){filtered=wishG;}
-  else if(currentListTab==='mine'){filtered=allG.filter(function(g){return me&&g.interested.indexOf(me)>=0;});}
-  else if(currentListTab==='shortage'){filtered=allG.filter(function(g){return!g.ignored&&(!g.explainers.length||!g.suppliers.length);});}
-  else{filtered=allG;}
-  if(currentListTab!=='wish'&&!showIgnored)filtered=filtered.filter(function(g){return!g.ignored;});
+  var aktivG=games.filter(function(g){return!g.wish&&g.explainers.length>0&&g.suppliers.length>0;});
+  var wishG=games.filter(function(g){return g.wish||(g.explainers.length===0||g.suppliers.length===0);});
+  var ca=document.getElementById('tab-count-aktiv');if(ca)ca.textContent='('+aktivG.length+')';
+  var cw=document.getElementById('tab-count-wish');if(cw)cw.textContent='('+wishG.length+')';
+  var filtered=currentListTab==='wish'?wishG:aktivG;
+  if(!showIgnored)filtered=filtered.filter(function(g){return!g.ignored;});
   filtered=sortGames(filtered);
   var el=document.getElementById('game-list');if(!el)return;
   if(!filtered.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele</div>';updateInboxDot();return;}
@@ -1158,6 +1154,17 @@ function renderGameCard(g,inInbox,swipeKey){
     btnHtml+='<button class="btn btn-sm" style="flex:1;background:rgba(255,255,255,.06);color:var(--muted);border:none" onclick="event.stopPropagation();ignoreGame(\''+g.id+'\');showToast(\'Ignoriert\',function(){var g=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g){g.ignored=false;renderAll();}})">Ignorieren</button>';
     btnHtml+='</div>';
   }
+  var wishBtn='';
+  if(!inInbox&&currentListTab==='wish'&&me){
+    var inColl=!!(g.bggCollection&&g.bggCollection[me]);
+    var wbColor=inColl?'var(--green)':'var(--muted)';
+    var wbBg=inColl?'rgba(90,158,111,.18)':'rgba(255,255,255,.06)';
+    wishBtn='<div style="padding:0 14px 10px" onclick="event.stopPropagation()">'+
+      '<button class="btn btn-sm" style="width:100%;background:'+wbBg+';color:'+wbColor+';border:none;font-weight:600" onclick="fulfillWish(\''+g.id+'\');showToast(\'Wunsch erfüllt!\',function(){var g=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g){g.wish=true;var i=g.explainers.indexOf(\''+me+'\');if(i>=0)g.explainers.splice(i,1);i=g.suppliers.indexOf(\''+me+'\');if(i>=0)g.suppliers.splice(i,1);renderAll();}})">'+
+        (inColl?'✓ ':'')+ic('<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',13)+' Ich erfülle diesen Wunsch'+
+      '</button>'+
+    '</div>';
+  }
   var cardInner=
     '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">'+
       imgHtml+
@@ -1169,7 +1176,7 @@ function renderGameCard(g,inInbox,swipeKey){
         btnHtml+
       '</div>'+
       '<div style="flex-shrink:0;padding-left:4px">'+ringHtml+'</div>'+
-    '</div>';
+    '</div>'+wishBtn;
   if(controlMode==='swipe'&&swipeKey){
     return'<div class="swipe-wrap" style="margin-bottom:8px">'+
       '<div class="wagon wagon-hide">'+(amInt?'Austragen':'Ignorieren')+'</div>'+

@@ -1049,11 +1049,12 @@ function getInboxGames(){var me=ME();if(!me)return[];return currentGames().filte
 function updateInboxDot(){var dot=document.getElementById('inbox-dot');if(dot)dot.style.display=getInboxGames().length>0?'block':'none';}
 var currentSort='newest';
 var SORT_OPTS=[
-  {v:'newest', label:'Neueste zuerst', badge:'<tspan x="12" dy="0" font-size="7" font-weight="700">123</tspan>'},
-  {v:'az',     label:'A – Z',          badge:'<tspan x="12" dy="0" font-size="8" font-weight="700">Az</tspan>'},
-  {v:'complexity', label:'Komplexität', badge:'<tspan x="12" dy="0" font-size="7" font-weight="700">W</tspan>'},
-  {v:'players',label:'Spielerzahl',    badge:'person'},
-  {v:'duration',label:'Spielzeit',     badge:'clock'},
+  {v:'newest',     label:'Neueste zuerst', badge:'<tspan x="12" dy="0" font-size="7" font-weight="700">123</tspan>'},
+  {v:'az',         label:'A – Z',          badge:'<tspan x="12" dy="0" font-size="8" font-weight="700">Az</tspan>'},
+  {v:'complexity', label:'Komplexität',    badge:'network'},
+  {v:'players',    label:'Spielerzahl',    badge:'person'},
+  {v:'duration',   label:'Spielzeit',      badge:'clock'},
+  {v:'interaction',label:'Koop / Semi / Komp', badge:'gear'},
 ];
 function sortIcon(v,sz){
   sz=sz||18;
@@ -1061,12 +1062,25 @@ function sortIcon(v,sz){
   var arrows='<polyline points="8 6 12 2 16 6"/><polyline points="8 18 12 22 16 18"/><line x1="12" y1="2" x2="12" y2="22"/>';
   var badge='';
   if(opt.badge==='person'){
-    badge='<circle cx="12" cy="9" r="3.5" fill="var(--tan)" stroke="none"/><path d="M6 21c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="var(--tan)" stroke="none"/>';
-    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+badge+'</svg>';
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+      '<circle cx="12" cy="9" r="3.5" fill="var(--tan)" stroke="none"/><path d="M6 21c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="var(--tan)" stroke="none"/>'+
+    '</svg>';
   }
   if(opt.badge==='clock'){
-    badge='<circle cx="12" cy="12" r="8" fill="var(--tan)" stroke="none" opacity=".3"/><circle cx="12" cy="12" r="8"/><polyline points="12 8 12 12 15 14"/>';
-    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+badge+'</svg>';
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+      '<circle cx="12" cy="12" r="8" fill="var(--tan)" stroke="none" opacity=".3"/><circle cx="12" cy="12" r="8"/><polyline points="12 8 12 12 15 14"/>'+
+    '</svg>';
+  }
+  if(opt.badge==='network'){
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="var(--tan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+      '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>'+
+      '<line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/><line x1="5" y1="19" x2="19" y2="19"/>'+
+    '</svg>';
+  }
+  if(opt.badge==='gear'){
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="var(--tan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+      '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>'+
+    '</svg>';
   }
   return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
     '<polyline points="5 8 9 4 13 8"/><line x1="9" y1="4" x2="9" y2="20"/>'+
@@ -1103,6 +1117,7 @@ function sortGames(arr){
   else if(v==='complexity')arr.sort(function(a,b){return(b.complexity||0)-(a.complexity||0);});
   else if(v==='players')arr.sort(function(a,b){return(parseInt(a.players)||0)-(parseInt(b.players)||0);});
   else if(v==='duration')arr.sort(function(a,b){return(a.duration||0)-(b.duration||0);});
+  else if(v==='interaction'){var order={koop:0,semi:1,komp:2};arr.sort(function(a,b){return(order[a.interaction]||2)-(order[b.interaction]||2);});}
   return arr;
 }
 function switchListTab(tab){

@@ -1045,7 +1045,7 @@ function fetchGameCover(g){
 function currentUser(){return users.find(function(u){return u.id===currentUserId;})||users[0];}
 function updateAvatars(){
   var u=currentUser();
-  document.querySelectorAll('.avatar-btn').forEach(function(btn){btn.textContent=u.initials;btn.style.borderColor=u.color;btn.style.color=u.color;});
+  document.querySelectorAll('.avatar-btn').forEach(function(btn){btn.textContent=u.initials;btn.style.borderColor=currentAccent;btn.style.color=currentAccent;});
 }
 function openUserOverlay(){
   document.getElementById('user-list-ul').innerHTML=users.map(function(u){

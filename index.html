@@ -191,6 +191,9 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 .trigger-row{display:flex;gap:8px;margin-top:8px}
 .trigger-opt{flex:1;padding:8px;border-radius:8px;border:1px solid #444;background:none;color:var(--muted);font-size:12px;cursor:pointer;text-align:center}
 .trigger-opt.active{border-color:var(--tan);color:var(--tan)}
+#app-banner{width:100%;background:#1a1a1a;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#app-banner img{width:100%;max-height:70px;object-fit:cover;object-position:center}
+#app-banner .banner-svg{padding:8px 0}
 #toast{position:absolute;bottom:16px;left:12px;right:12px;background:#3a3a3a;color:var(--text);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;z-index:1000;transform:translateY(100px);transition:transform .25s ease;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 #toast.show{transform:translateY(0);pointer-events:auto}
 .toast-undo{background:none;border:none;color:var(--tan);font-size:13px;font-weight:700;cursor:pointer;padding:0;flex-shrink:0}
@@ -198,6 +201,9 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 </head>
 <body>
 <div id="app">
+
+<!-- APP BANNER -->
+<div id="app-banner"></div>
 
 <!-- JOIN SCREEN -->
 <div class="join-screen" id="join-screen" style="display:none">
@@ -287,6 +293,20 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   </div>
 </div>
 
+<!-- JOIN EVENT OVERLAY -->
+<div class="overlay" id="join-event-overlay">
+  <div class="overlay-box">
+    <h3>Event beitreten</h3>
+    <input id="join-event-code" placeholder="Event-Code (z.B. DD11)" style="text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">
+    <input id="join-event-pass" type="password" placeholder="Passwort" style="margin-bottom:8px">
+    <div id="join-event-err" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" style="flex:1" onclick="joinEventByCode()">Beitreten</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeJoinDialog()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD GAME OVERLAY -->
 <div class="overlay" id="add-game-overlay">
   <div class="overlay-box" style="max-height:80vh;overflow-y:auto">
@@ -357,7 +377,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: INBOX -->
 <div class="screen" id="screen-inbox">
   <div class="app-bar">
-    <span class="app-bar-title" style="cursor:default">Dice Days 11</span>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-inbox"></button>
     <button class="avatar-btn" id="avatar-inbox" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -370,7 +390,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: MITSPIELEN -->
 <div class="screen" id="screen-mit">
   <div class="app-bar">
-    <span class="app-bar-title" style="cursor:default">Dice Days 11</span>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-mit"></button>
     <button class="avatar-btn" id="avatar-mit" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -383,7 +403,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: ERKLÄREN -->
 <div class="screen" id="screen-erk">
   <div class="app-bar">
-    <span class="app-bar-title" style="cursor:default">Dice Days 11</span>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-erk"></button>
     <button class="avatar-btn" id="avatar-erk" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -396,7 +416,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: PACKLISTE -->
 <div class="screen" id="screen-pack">
   <div class="app-bar">
-    <span class="app-bar-title" style="cursor:default">Dice Days 11</span>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-pack"></button>
     <button class="avatar-btn" id="avatar-pack" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -406,7 +426,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <!-- SCREEN: BUFFET -->
 <div class="screen" id="screen-buffet">
   <div class="app-bar">
-    <span class="app-bar-title" style="cursor:default">Dice Days 11</span>
+    <button class="app-bar-title" onclick="toggleEventDropdown()">Dice Days 11</button>
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-buffet"></button>
     <button class="avatar-btn" id="avatar-buffet" onclick="openAvatarMenu(event)">DE</button>
   </div>
@@ -542,7 +562,7 @@ var userSchedules = {
   'u1':{'ev1':{arrivalDate:'2025-07-18',arrivalTime:'16:00',departureDate:'2025-07-20',departureTime:'11:00',sleepStart:'03:00',sleepEnd:'08:00',saved:true}}
 };
 var allEvents = [
-  {id:'ev1',name:'Dice Days 12',code:'ABC123',password:null,arrivalDate:'2025-07-18',arrivalTime:'15:00',departureDate:'2025-07-20',departureTime:'12:00',genericPacklist:['Schlafsack','Kopfkissen','Handtuch','Zahnbürste','Hausschuhe','Snacks & Getränke','Würfel'],hasBuffet:true,payAmount:'35€',paypalLink:'https://paypal.me/demo'},
+  {id:'ev1',name:'Dice Days 12',code:'ABC123',password:null,joinCode:'DD11',joinPassword:'brett2024',arrivalDate:'2025-07-18',arrivalTime:'15:00',departureDate:'2025-07-20',departureTime:'12:00',genericPacklist:['Schlafsack','Kopfkissen','Handtuch','Zahnbürste','Hausschuhe','Snacks & Getränke','Würfel'],hasBuffet:true,payAmount:'35€',paypalLink:'https://paypal.me/demo'},
   {id:'ev2',name:'Dice Days 11',code:'KXMP7Q',password:'1234',arrivalDate:'2024-07-19',arrivalTime:'15:00',departureDate:'2024-07-21',departureTime:'12:00',genericPacklist:['Hausschuhe','Snacks & Getränke'],hasBuffet:false,payAmount:'30€',paypalLink:'https://paypal.me/demo'},
 ];
 var eventGames = {
@@ -670,6 +690,7 @@ function showScreen(name){
       }
     }
   }
+  renderAppBanner();
   if(name==='list'){renderGameList();renderBanners();renderPaypalBanner();renderPolls();updateEventTitle();}
   if(name==='inbox'){renderInbox();renderUnifiedTimeBar('inbox-timebar');}
   if(name==='mit'){renderMit();renderUnifiedTimeBar('mit-timebar');}
@@ -679,7 +700,20 @@ function showScreen(name){
   if(name==='admin')renderAdmin();
   updateAvatars();
 }
-function renderAll(){var cur=document.querySelector('.screen.active');showScreen(cur?cur.id.replace('screen-',''):'list');updateInboxDot();}
+function renderAll(){var cur=document.querySelector('.screen.active');showScreen(cur?cur.id.replace('screen-',''):'list');updateInboxDot();renderAppBanner();}
+
+// ============================================================
+// APP BANNER
+// ============================================================
+function renderAppBanner(){
+  var el=document.getElementById('app-banner');if(!el)return;
+  var ev=currentEvent();
+  if(ev&&ev.bannerUrl){
+    el.innerHTML='<img src="'+escHtml(ev.bannerUrl)+'" onerror="this.style.display=\'none\'" alt="">';
+  }else{
+    el.innerHTML='<div class="banner-svg"><svg viewBox="0 0 400 80" height="50" xmlns="http://www.w3.org/2000/svg"><text x="10" y="62" font-family="Arial Black,sans-serif" font-weight="900" font-size="72" fill="#e0e0e0" opacity="0.3">DiCE</text><text x="198" y="62" font-family="Arial Black,sans-serif" font-weight="900" font-size="72" fill="#B8A082">DAYS</text></svg></div>';
+  }
+}
 
 // ============================================================
 // EVENT TITLE & DROPDOWN
@@ -687,23 +721,52 @@ function renderAll(){var cur=document.querySelector('.screen.active');showScreen
 function updateEventTitle(){
   var ev=currentEvent(),btn=document.getElementById('event-title-btn');if(!btn)return;
   var mems=userMemberships[currentUserId]||[];
-  btn.textContent='Dice Days 11'+(mems.length>1?' ▾':'');
+  btn.textContent='Dice Days 11 ▾';
   btn.style.color='var(--tan)';
   var badge=document.getElementById('event-code-badge');if(badge)badge.textContent='';
 }
 function toggleEventDropdown(){
-  var mems=userMemberships[currentUserId]||[];if(mems.length<=1)return;
   var dd=document.getElementById('event-dropdown');dd.classList.toggle('show');
   if(dd.classList.contains('show')){
-    dd.innerHTML=mems.map(function(evId){
+    var mems=userMemberships[currentUserId]||[];
+    var eventsHtml=mems.map(function(evId){
       var ev=allEvents.find(function(e){return e.id===evId;});if(!ev)return'';
       var active=evId===currentEventId();
       var inb=(eventGames[evId]||[]).filter(function(g){return!g.ignored&&!g.wish&&(ME()===null||g.interested.indexOf(ME())<0);}).length;
       return'<div class="event-dd-item" onclick="switchEvent(\''+evId+'\')">'+(active?'<span style="color:var(--tan);margin-right:4px">&#10003;</span>':'')+escHtml(ev.name)+(inb>0?' <span class="badge">'+inb+'</span>':'')+'</div>';
     }).join('');
+    var sep='<div style="border-top:1px solid #333;margin:2px 0"></div>';
+    var editBtn='<div class="event-dd-item" onclick="document.getElementById(\'event-dropdown\').classList.remove(\'show\');showScreen(\'admin\')">&#9998; Event bearbeiten</div>';
+    var joinBtn='<div class="event-dd-item" onclick="document.getElementById(\'event-dropdown\').classList.remove(\'show\');openJoinDialog()">&#43; Event beitreten</div>';
+    dd.innerHTML=eventsHtml+sep+editBtn+joinBtn;
   }
 }
 function switchEvent(evId){userActiveEvent[currentUserId]=evId;document.getElementById('event-dropdown').classList.remove('show');renderAll();}
+function openJoinDialog(){
+  var errEl=document.getElementById('join-event-err');
+  if(errEl)errEl.style.display='none';
+  var ci=document.getElementById('join-event-code');if(ci)ci.value='';
+  var pi=document.getElementById('join-event-pass');if(pi)pi.value='';
+  showOverlay('join-event-overlay');
+}
+function closeJoinDialog(){closeOverlay('join-event-overlay');}
+function joinEventByCode(){
+  var codeEl=document.getElementById('join-event-code'),passEl=document.getElementById('join-event-pass'),errEl=document.getElementById('join-event-err');
+  var code=codeEl.value.trim().toUpperCase(),pass=passEl.value.trim();
+  var ev=allEvents.find(function(e){return e.joinCode===code&&e.joinPassword===pass;});
+  if(!ev){errEl.textContent='Ungültiger Code oder Passwort';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  var mems=userMemberships[currentUserId]||(userMemberships[currentUserId]=[]);
+  if(mems.indexOf(ev.id)<0)mems.push(ev.id);
+  userActiveEvent[currentUserId]=ev.id;
+  if(!eventGames[ev.id])eventGames[ev.id]=[];
+  if(!eventPackItems[ev.id])eventPackItems[ev.id]=[];
+  if(!eventTrades[ev.id])eventTrades[ev.id]=[];
+  if(!eventPayments[ev.id])eventPayments[ev.id]={};
+  if(!eventParticipants[ev.id])eventParticipants[ev.id]=[];
+  closeJoinDialog();
+  renderAll();
+}
 
 // ============================================================
 // DARK MODE
@@ -1705,7 +1768,10 @@ function setAdminTab(tab){adminTab=tab;renderAdmin();}
 function renderAdminEventTab(ev){
   if(!ev)return'<div style="color:var(--muted);padding:20px">Kein Event aktiv</div>';
   var evId=ev.id,payments=eventPayments[evId]||{},participants=currentParticipants();
-  return'<div class="admin-section"><h3>Buffet</h3><div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span><label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="allEvents.find(function(e){return e.id===\''+evId+'\';}).hasBuffet=this.checked"><span class="toggle-slider"></span></label></div></div>'+
+  return'<div class="admin-section"><h3>Banner</h3>'+
+    '<label>Banner-URL</label><input id="admin-banner-url" value="'+escHtml(ev.bannerUrl||'')+'" placeholder="https://…">'+
+    '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="saveBannerUrl()">Speichern</button></div>'+
+    '<div class="admin-section"><h3>Buffet</h3><div class="toggle-row"><span style="font-size:13px;color:var(--text)">Buffet aktiviert</span><label class="toggle-switch"><input type="checkbox"'+(ev.hasBuffet?' checked':'')+' onchange="allEvents.find(function(e){return e.id===\''+evId+'\';}).hasBuffet=this.checked"><span class="toggle-slider"></span></label></div></div>'+
     '<div class="admin-section"><h3>Zahlung</h3>'+
     '<label>Betrag</label><input id="pay-amount" value="'+(ev.payAmount||'35€')+'">'+
     '<label>PayPal-Link</label><input id="pay-link" value="'+(ev.paypalLink||'')+'">'+
@@ -1752,6 +1818,7 @@ function renderAdminVpTab(ev){
       return'<div class="participant-row"><div class="p-avatar" style="background:#33333377;color:var(--muted)">'+vp.name.slice(0,2).toUpperCase()+'</div><div style="flex:1"><div style="font-size:13px;color:var(--text)">'+escHtml(vp.name)+'</div><div style="font-size:11px;color:var(--muted)">Code: <span class="vp-code">'+vp.code+'</span> · '+(vp.linkedUserId?'Verknüpft':'Frei')+'</div></div></div>';
     }).join('')+'</div>':'');
 }
+function saveBannerUrl(){var ev=currentEvent();if(!ev)return;var inp=document.getElementById('admin-banner-url');if(inp)ev.bannerUrl=inp.value.trim();renderAppBanner();renderAdmin();}
 function checkAdminPin(){if(document.getElementById('admin-pin-input').value==='1234'){adminUnlocked=true;renderAdmin();}else alert('Falscher PIN');}
 function savePaySettings(){var ev=currentEvent();if(!ev)return;var a=document.getElementById('pay-amount'),l=document.getElementById('pay-link');if(a)ev.payAmount=a.value.trim();if(l)ev.paypalLink=l.value.trim();renderAdmin();}
 function togglePayment(evId,pid){if(!eventPayments[evId])eventPayments[evId]={};eventPayments[evId][pid]=!eventPayments[evId][pid];renderAdmin();renderPaypalBanner();}

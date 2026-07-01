@@ -6,7 +6,7 @@
 <title>Dice Days</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:#111;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;font-family:'Segoe UI',sans-serif}
+body{background:#111;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;font-family:'Segoe UI',sans-serif;color:var(--text)}
 #app{position:relative;width:100%;max-width:430px;height:100svh;height:100vh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
 :root{--tan:#B8A082;--surface:#252525;--card:#2e2e2e;--text:#e8e8e8;--muted:#888;--red:#e05555;--green:#5a9e6f;--yellow:#d4a017;--bg:#1a1a1a}
 :root.light{--tan:#8B6E4E;--surface:#f0ede8;--card:#ffffff;--text:#1a1a1a;--muted:#777;--red:#c0392b;--green:#2e7d4f;--yellow:#b8860b;--bg:#e8e4de}
@@ -18,14 +18,14 @@ body.light{background:#ccc}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;line-height:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px}
 .icon-btn:hover{background:#333}
 .scroll-area{flex:1;overflow-y:auto;padding:12px;min-height:0}
-.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;position:relative}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;position:relative;color:var(--text)}
 .badge{background:var(--red);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:2px 6px;min-width:18px;text-align:center;display:inline-block}
 .btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600}
 .btn-primary{background:var(--tan);color:#111}
 .btn-ghost{background:none;border:1px solid var(--tan);color:var(--tan)}
 .btn-danger{background:var(--red);color:#fff}
 .btn-sm{padding:5px 10px;font-size:12px}
-input,select,textarea{background:#333;border:1px solid #444;color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
+input,select,textarea{background:var(--surface);border:1px solid #444;color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--tan)}
 label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-top:10px}
 .bottom-nav{display:flex;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0}
@@ -437,11 +437,17 @@ function ic(paths,sz){
   return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';
 }
 function ssSVG(r,sz){
-  sz=sz||36;
-  if(r>1){return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'"><text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="'+(sz*0.7)+'" fill="var(--red)">&#128293;</text></svg>';}
-  var rd=sz/2-2,c=sz/2,sw=3,a=2*Math.PI*Math.min(r||0,1),x=c+rd*Math.sin(a),y=c-rd*Math.cos(a),lg=r>0.5?1:0;
+  sz=sz||30;
+  if(r>1){
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+
+      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z" fill="var(--red)" stroke="none"/>'+
+      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z"/>'+
+      '<path d="M8 14c-1.2.8-2 2-2 3.5C6 19.4 8.7 21 12 21s6-1.6 6-3.5c0-1.5-.8-2.7-2-3.5 0 1-.6 2-2 2.5.3-.8.4-1.7 0-2.5"/>'+
+    '</svg>';
+  }
+  var rd=sz/2-2,c=sz/2,sw=2.5,a=2*Math.PI*Math.min(r||0,1),x=c+rd*Math.sin(a),y=c-rd*Math.cos(a),lg=r>0.5?1:0;
   var arc=r>0?'<path d="M'+c+','+(c-rd)+' A'+rd+','+rd+' 0 '+lg+' 1 '+x.toFixed(1)+','+y.toFixed(1)+'" fill="none" stroke="var(--green)" stroke-width="'+sw+'" stroke-linecap="round"/>':'';
-  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'"><circle cx="'+c+'" cy="'+c+'" r="'+rd+'" fill="none" stroke="#444" stroke-width="'+sw+'"/>'+arc+'</svg>';
+  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'"><circle cx="'+c+'" cy="'+c+'" r="'+rd+'" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="'+sw+'"/>'+arc+'</svg>';
 }
 var ICO = {
   dice: ic('<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>'),
@@ -558,7 +564,7 @@ var eventTrades = {
 };
 var virtualParticipants=[],banners=[],polls=[];
 var nextBannerId=1,nextPollId=1,nextVpId=1,nextUserId=3;
-var controlMode='button',snappedCardId=null,showIgnored=false,currentListTab='all',hideDonePackItems=false;
+var controlMode='swipe',snappedCardId=null,showIgnored=false,currentListTab='all',hideDonePackItems=false;
 var adminUnlocked=false,adminTab='event',adminBannerTrigger='date',pwOverlayCallback=null;
 
 // ============================================================
@@ -1009,61 +1015,66 @@ function renderGameCard(g,inInbox,swipeKey){
   var participants=currentParticipants();
   var noExp=!g.explainers.length&&!g.wish;
   var noSup=!g.suppliers.length&&!g.wish;
-  // warning line above name
+  // warning line
   var warnings=[];
-  if(noExp)warnings.push('<span style="color:var(--red);font-size:11px">Kein Erklärer</span>');
-  if(noSup)warnings.push('<span style="color:var(--red);font-size:11px">Kein Lieferant</span>');
-  var warnHtml=warnings.length?'<div style="margin-bottom:2px">'+warnings.join('<span style="color:var(--muted);font-size:11px"> · </span>')+'</div>':'';
+  if(noExp)warnings.push('<span style="color:var(--red);font-size:12px;font-weight:600">Kein Erklärer</span>');
+  if(noSup)warnings.push('<span style="color:var(--red);font-size:12px;font-weight:600">Kein Lieferant</span>');
+  var warnHtml=warnings.length?'<div style="margin-bottom:3px">'+warnings.join('<span style="color:var(--muted);font-size:12px"> · </span>')+'</div>':'';
   // info line
   var infoParts=[];
   if(g.players)infoParts.push(g.players+' Sp.');
   if(g.duration)infoParts.push(g.duration+' Min');
-  if(g.complexity)infoParts.push('Weight '+g.complexity);
+  if(g.complexity)infoParts.push('W '+g.complexity);
   var infoLine=infoParts.join(' · ');
   // tags
   var tags='';
   if(g.interested.length){
-    var intStyle=amInt?'background:rgba(90,158,111,.2);color:var(--green);':'background:#333;color:var(--muted);';
-    tags+='<span class="tag" style="'+intStyle+'">'+g.interested.length+' Interessenten</span>';
+    var intStyle=amInt?'background:rgba(90,158,111,.2);color:var(--green);':'background:rgba(255,255,255,.06);color:var(--muted);';
+    tags+='<span class="tag" style="'+intStyle+'">'+g.interested.length+' Interesse</span>';
   }
   if(g.explainers.length){
     var exN=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?(pid===me?'Du erklärst':p.name+' erklärt'):pid;});
-    var exStyle=amExp?'background:rgba(212,160,23,.2);color:var(--yellow);':'background:rgba(184,160,130,.15);color:var(--tan);';
+    var exStyle=amExp?'background:rgba(212,160,23,.2);color:var(--yellow);':'background:rgba(184,160,130,.12);color:var(--tan);';
     tags+='<span class="tag" style="'+exStyle+'">'+exN[0]+'</span>';
   }
   if(g.ignored)tags+='<span class="tag" style="opacity:.5">Ignoriert</span>';
   if(g.wish)tags+='<span class="tag tan">Wunsch</span>';
-  // right status icon
-  var rightIcon,rightColor;
-  if(!g.explainers.length&&!g.wish){
-    rightIcon=ic('<path d="M12 2c5.52 0 10 4.48 10 10S17.52 22 7 22c-1.7 0-3.37-.26-4.96-.75 0 0-1.04-.35-1.04-1.25s1-1.25 1-1.25C3.69 18.16 6 15.27 6 12 6 6.48 10.48 2 12 2zm0 4l-1.5 3-3.5.5 2.5 2.5-.5 3.5L12 14l3 1.5-.5-3.5 2.5-2.5-3.5-.5L12 6z"/>',22);
-    rightIcon=ic('<path d="M13 10V3L4 14h7v7l9-11h-7z"/>',22);
-    rightColor='var(--yellow)';
-  }else if(amExp){
-    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
-    rightColor='var(--muted)';
-  }else if(amInt){
-    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
-    rightColor='var(--green)';
-  }else{
-    rightIcon=ic('<circle cx="12" cy="12" r="9"/>',22);
-    rightColor='#444';
-  }
+  // right ring: interested / max players
+  var maxP=parseInt((g.players||'').split('-').pop())||4;
+  var ratio=g.interested.length/maxP;
+  var ringHtml=ssSVG(ratio,30);
   // cover image
   var thumb=bggThumb(g);
   var imgHtml=thumb
     ?'<img class="game-card-cover" src="'+thumb+'" onerror="this.style.display=\'none\'" alt="">'
-    :'<div class="game-card-cover-ph">'+ic('<rect x="3" y="3" width="18" height="18" rx="3"/>',22)+'</div>';
+    :'<div class="game-card-cover-ph">'+ic('<rect x="3" y="3" width="18" height="18" rx="3"/>',24)+'</div>';
+  // button mode actions
+  var btnHtml='';
+  if(controlMode==='button'&&me&&!inInbox){
+    btnHtml='<div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)">';
+    if(!amInt) btnHtml+='<button class="btn btn-sm btn-primary" style="flex:1" onclick="event.stopPropagation();toggleInterest(\''+g.id+'\')">Interesse</button>';
+    else        btnHtml+='<button class="btn btn-sm btn-ghost" style="flex:1" onclick="event.stopPropagation();toggleInterest(\''+g.id+'\')">Zurückziehen</button>';
+    if(!amExp)  btnHtml+='<button class="btn btn-sm" style="flex:1;background:rgba(212,160,23,.15);color:var(--yellow);border:none" onclick="event.stopPropagation();addExplainer(\''+g.id+'\')">Erklären</button>';
+    btnHtml+='<button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:var(--muted);border:none" onclick="event.stopPropagation();ignoreGame(\''+g.id+'\')" title="Ignorieren">'+ic('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',14)+'</button>';
+    btnHtml+='</div>';
+  }
+  if(controlMode==='button'&&me&&inInbox){
+    btnHtml='<div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)">';
+    btnHtml+='<button class="btn btn-sm btn-primary" style="flex:1" onclick="event.stopPropagation();toggleInterest(\''+g.id+'\')">Interesse</button>';
+    btnHtml+='<button class="btn btn-sm" style="flex:1;background:rgba(255,255,255,.06);color:var(--muted);border:none" onclick="event.stopPropagation();ignoreGame(\''+g.id+'\')">Ignorieren</button>';
+    btnHtml+='</div>';
+  }
   var cardInner=
-    '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;">'+
+    '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">'+
       imgHtml+
       '<div style="flex:1;min-width:0;">'+
         warnHtml+
-        '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:1px">'+escHtml(g.name)+'</div>'+
-        (infoLine?'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">'+infoLine+'</div>':'')+
+        '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.2">'+escHtml(g.name)+'</div>'+
+        (infoLine?'<div style="font-size:13px;color:var(--muted);margin-bottom:5px">'+infoLine+'</div>':'')+
         (tags?'<div class="game-tags">'+tags+'</div>':'')+
+        btnHtml+
       '</div>'+
-      '<div style="color:'+rightColor+';flex-shrink:0;padding-left:4px">'+rightIcon+'</div>'+
+      '<div style="flex-shrink:0;padding-left:4px">'+ringHtml+'</div>'+
     '</div>';
   if(controlMode==='swipe'&&swipeKey){
     return'<div class="swipe-wrap" style="margin-bottom:8px">'+

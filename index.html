@@ -161,7 +161,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 /* Avatar */
 .avatar-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--tan);background:var(--card);color:var(--tan);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.5px}
 /* Event dropdown */
-.event-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid #333;border-top:none;z-index:150;display:none}
+.event-dropdown{position:fixed;top:0;left:0;right:0;background:var(--surface);border-bottom:1px solid #333;z-index:500;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .event-dropdown.show{display:block}
 .event-dd-item{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333;font-size:13px;color:var(--text)}
 .event-dd-item:last-child{border-bottom:none}
@@ -204,6 +204,9 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 
 <!-- APP BANNER -->
 <div id="app-banner"></div>
+
+<!-- EVENT DROPDOWN (fixed, accessible from all screens) -->
+<div class="event-dropdown" id="event-dropdown"></div>
 
 <!-- JOIN SCREEN -->
 <div class="join-screen" id="join-screen" style="display:none">
@@ -340,7 +343,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <span id="event-code-badge" style="font-size:11px;font-weight:700;background:var(--card);border:1px solid #444;border-radius:6px;padding:3px 8px;color:var(--muted);letter-spacing:1px"></span>
     <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300">+</button>
     <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
-    <div class="event-dropdown" id="event-dropdown"></div>
   </div>
   <div class="bottom-nav" id="bottom-nav">
     <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
@@ -735,7 +737,9 @@ function updateEventTitle(){
   var badge=document.getElementById('event-code-badge');if(badge)badge.textContent='';
 }
 function toggleEventDropdown(){
-  var dd=document.getElementById('event-dropdown');dd.classList.toggle('show');
+  var dd=document.getElementById('event-dropdown');
+  if(dd.classList.contains('show')){dd.classList.remove('show');return;}
+  dd.classList.add('show');
   if(dd.classList.contains('show')){
     var mems=userMemberships[currentUserId]||[];
     var eventsHtml=mems.map(function(evId){
@@ -803,7 +807,11 @@ function openAvatarMenu(e){
   menu.style.right=(appRect.right-rect.right)+'px';
 }
 function closeAvatarMenu(){document.getElementById('avatar-dropdown').style.display='none';}
-document.addEventListener('click',function(){closeAvatarMenu();});
+document.addEventListener('click',function(e){
+  closeAvatarMenu();
+  var dd=document.getElementById('event-dropdown');
+  if(dd&&dd.classList.contains('show')&&!dd.contains(e.target)&&!e.target.classList.contains('app-bar-title'))dd.classList.remove('show');
+});
 
 // ============================================================
 // SETTINGS OVERLAY

@@ -238,6 +238,11 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <button class="avatar-menu-item" onclick="closeAvatarMenu();openUserOverlay()">
     <span id="ami-users"></span>Benutzer wechseln
   </button>
+  <div style="border-top:1px solid #333;margin:2px 0"></div>
+  <div style="padding:10px 14px">
+    <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Akzentfarbe</div>
+    <div id="color-swatches" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
 </div>
 
 <!-- SETTINGS OVERLAY -->
@@ -826,6 +831,39 @@ function toggleDarkMode(on){
 // ============================================================
 // AVATAR DROPDOWN
 // ============================================================
+var ACCENT_COLORS=[
+  {hex:'#B8A082',label:'Sand (Standard)'},
+  {hex:'#7B9E87',label:'Salbei'},
+  {hex:'#9E7B8A',label:'Mauve'},
+  {hex:'#7B8E9E',label:'Stahlblau'},
+  {hex:'#c0845a',label:'Terracotta'},
+  {hex:'#a0b060',label:'Olive'},
+  {hex:'#8a70c0',label:'Lavendel'},
+  {hex:'#c07070',label:'Rose'},
+];
+var DEFAULT_ACCENT='#B8A082';
+var currentAccent=DEFAULT_ACCENT;
+function setAccentColor(hex){
+  currentAccent=hex;
+  document.documentElement.style.setProperty('--tan',hex);
+  // derive a slightly lighter rgba for backgrounds referencing the raw value
+  renderColorSwatches();
+  renderAll();
+}
+function renderColorSwatches(){
+  var el=document.getElementById('color-swatches');if(!el)return;
+  el.innerHTML=ACCENT_COLORS.map(function(c){
+    var isActive=c.hex.toLowerCase()===currentAccent.toLowerCase();
+    var isDefault=c.hex.toLowerCase()===DEFAULT_ACCENT.toLowerCase();
+    return'<div onclick="setAccentColor(\''+c.hex+'\')" title="'+c.label+(isDefault?' · Standard':'')+'" style="'+
+      'width:24px;height:24px;border-radius:50%;background:'+c.hex+';cursor:pointer;'+
+      'box-shadow:'+( isActive?'0 0 0 2px var(--surface),0 0 0 4px '+c.hex:'none')+';'+
+      'position:relative;transition:box-shadow .15s'+
+    '">'+
+    (isDefault&&!isActive?'<div style="position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--surface);border-radius:50%;border:1.5px solid '+c.hex+'"></div>':'')+
+    '</div>';
+  }).join('');
+}
 function openAvatarMenu(e){
   e.stopPropagation();
   var menu=document.getElementById('avatar-dropdown');
@@ -836,6 +874,7 @@ function openAvatarMenu(e){
   var appRect=document.getElementById('app').getBoundingClientRect();
   menu.style.top=(rect.bottom-appRect.top+4)+'px';
   menu.style.right=(appRect.right-rect.right)+'px';
+  renderColorSwatches();
 }
 function closeAvatarMenu(){document.getElementById('avatar-dropdown').style.display='none';}
 document.addEventListener('click',function(e){
@@ -1198,9 +1237,9 @@ function sortIcon(v,sz){
   var opt=SORT_OPTS.find(function(o){return o.v===v;})||SORT_OPTS[0];
   // Two 24x24 cells side by side: arrows left, badge right
   var arrows=
-    '<polyline points="5,7 9,3 13,7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
-    '<line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'+
-    '<polyline points="5,17 9,21 13,17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    '<polyline points="5,7 9,3 13,7" fill="none" stroke="var(--tan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<line x1="9" y1="3" x2="9" y2="21" stroke="var(--tan)" stroke-width="2" stroke-linecap="round"/>'+
+    '<polyline points="5,17 9,21 13,17" fill="none" stroke="var(--tan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   var badge='<g transform="translate(24,0)">'+sortBadgeContent(opt.badge)+'</g>';
   return'<svg width="'+(sz*2)+'" height="'+sz+'" viewBox="0 0 48 24" fill="none">'+arrows+badge+'</svg>';
 }

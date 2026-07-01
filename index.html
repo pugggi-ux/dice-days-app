@@ -111,8 +111,10 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .tbl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .overplanned-label{color:var(--red);font-size:11px;font-weight:700;margin-top:3px}
 /* Sort bar */
-.sort-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0}
-.sort-bar select{flex:1;font-size:12px;padding:5px 8px}
+.sort-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0;position:relative}
+.sort-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;color:var(--text)}
+.sort-option:hover,.sort-option.active{background:rgba(255,255,255,.07)}
+.sort-option.active{color:var(--tan)}
 /* Swipe hint */
 .swipe-hint{background:#2a2a2a;border-radius:8px;padding:8px 12px;font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;letter-spacing:.2px}
 /* Section header */
@@ -338,13 +340,11 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="tab" id="tab-btn-wish" onclick="switchListTab('wish')">Wunschliste <span id="tab-count-wish" style="opacity:.6;font-size:11px"></span></button>
   </div>
   <div class="sort-bar">
-    <select id="sort-select" onchange="renderGameList()">
-      <option value="newest">Neueste zuerst</option>
-      <option value="az">A – Z</option>
-      <option value="complexity">Komplexität</option>
-      <option value="players">Spielerzahl</option>
-      <option value="duration">Spielzeit</option>
-    </select>
+    <button class="icon-btn" id="sort-btn" onclick="toggleSortMenu()" title="Sortierung" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid #444;background:var(--card);color:var(--text);font-size:12px;font-weight:600;white-space:nowrap"></button>
+    <div id="sort-menu" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4)" onclick="if(event.target===this)closeSortMenu()">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:16px;padding:8px;min-width:230px;box-shadow:0 8px 32px rgba(0,0,0,.6)">
+      </div>
+    </div>
     <button class="icon-btn" id="eye-btn" onclick="toggleIgnored()" title="Ignorierte ein-/ausblenden" style="color:var(--tan)"></button>
   </div>
   <div class="scroll-area" id="game-list-scroll">
@@ -1047,8 +1047,56 @@ function showToast(msg,undoFn){
 // ============================================================
 function getInboxGames(){var me=ME();if(!me)return[];return currentGames().filter(function(g){return!g.wish&&!g.ignored&&g.interested.indexOf(me)<0&&g.explainers.indexOf(me)<0;});}
 function updateInboxDot(){var dot=document.getElementById('inbox-dot');if(dot)dot.style.display=getInboxGames().length>0?'block':'none';}
+var currentSort='newest';
+var SORT_OPTS=[
+  {v:'newest', label:'Neueste zuerst', badge:'<tspan x="12" dy="0" font-size="7" font-weight="700">123</tspan>'},
+  {v:'az',     label:'A – Z',          badge:'<tspan x="12" dy="0" font-size="8" font-weight="700">Az</tspan>'},
+  {v:'complexity', label:'Komplexität', badge:'<tspan x="12" dy="0" font-size="7" font-weight="700">W</tspan>'},
+  {v:'players',label:'Spielerzahl',    badge:'person'},
+  {v:'duration',label:'Spielzeit',     badge:'clock'},
+];
+function sortIcon(v,sz){
+  sz=sz||18;
+  var opt=SORT_OPTS.find(function(o){return o.v===v;})||SORT_OPTS[0];
+  var arrows='<polyline points="8 6 12 2 16 6"/><polyline points="8 18 12 22 16 18"/><line x1="12" y1="2" x2="12" y2="22"/>';
+  var badge='';
+  if(opt.badge==='person'){
+    badge='<circle cx="12" cy="9" r="3.5" fill="var(--tan)" stroke="none"/><path d="M6 21c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="var(--tan)" stroke="none"/>';
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+badge+'</svg>';
+  }
+  if(opt.badge==='clock'){
+    badge='<circle cx="12" cy="12" r="8" fill="var(--tan)" stroke="none" opacity=".3"/><circle cx="12" cy="12" r="8"/><polyline points="12 8 12 12 15 14"/>';
+    return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+badge+'</svg>';
+  }
+  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+    '<polyline points="5 8 9 4 13 8"/><line x1="9" y1="4" x2="9" y2="20"/>'+
+    '<polyline points="19 16 15 20 11 16"/><line x1="15" y1="20" x2="15" y2="4"/>'+
+    '<text x="12" y="15" text-anchor="middle" fill="var(--tan)" stroke="none">'+opt.badge+'</text>'+
+  '</svg>';
+}
+function updateSortBtn(){
+  var btn=document.getElementById('sort-btn');if(!btn)return;
+  var opt=SORT_OPTS.find(function(o){return o.v===currentSort;})||SORT_OPTS[0];
+  btn.innerHTML=sortIcon(currentSort,16)+'<span>'+opt.label+'</span>';
+}
+function toggleSortMenu(){
+  var menu=document.getElementById('sort-menu');if(!menu)return;
+  var showing=menu.style.display!=='none';
+  if(showing){closeSortMenu();return;}
+  var inner=menu.querySelector('div');
+  inner.innerHTML='<div style="font-size:11px;color:var(--muted);font-weight:600;padding:6px 12px 4px">Sortieren nach</div>'+
+    SORT_OPTS.map(function(o){
+      return'<div class="sort-option'+(o.v===currentSort?' active':'')+'" onclick="setSortMode(\''+o.v+'\')">'+
+        sortIcon(o.v,20)+'<span>'+o.label+'</span>'+
+      '</div>';
+    }).join('');
+  menu.style.display='block';
+}
+function closeSortMenu(){var m=document.getElementById('sort-menu');if(m)m.style.display='none';}
+function setSortMode(v){currentSort=v;closeSortMenu();updateSortBtn();renderGameList();}
+
 function sortGames(arr){
-  var v=(document.getElementById('sort-select')||{value:'newest'}).value;
+  var v=currentSort;
   arr=arr.slice();
   if(v==='newest')arr.sort(function(a,b){return b.ts-a.ts;});
   else if(v==='az')arr.sort(function(a,b){return a.name.localeCompare(b.name);});
@@ -1090,7 +1138,7 @@ function renderGameList(){
     function(gid,wE){var x=currentGames().find(function(h){return h.id===gid;});if(!x)return;if(x.ignored){x.ignored=false;renderAll();showToast('Ignorieren aufgehoben',function(){x.ignored=true;renderAll();});return;}toggleInterest(gid);if(wE)addExplainer(gid);showToast(wE?'Erklärer eingetragen':'Interesse angemeldet',function(){toggleInterest(gid);if(wE)removeExplainer(gid);});},
     function(gid){var x=currentGames().find(function(h){return h.id===gid;});var me=ME();if(x&&me&&x.interested.indexOf(me)>=0){toggleInterest(gid);showToast('Interesse ausgetragen',function(){toggleInterest(gid);});}else{ignoreGame(gid);showToast('Ignoriert',function(){var y=currentGames().find(function(h){return h.id===gid;});if(y){y.ignored=false;renderAll();}});}}
   );});
-  updateInboxDot();updateEventTitle();
+  updateSortBtn();updateInboxDot();updateEventTitle();
 }
 
 function bggThumb(g){return g.img||'';}

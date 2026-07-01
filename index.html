@@ -452,7 +452,16 @@ function ssSVG(r,sz){
       '<path d="M8 14c-1.2.8-2 2-2 3.5C6 19.4 8.7 21 12 21s6-1.6 6-3.5c0-1.5-.8-2.7-2-3.5 0 1-.6 2-2 2.5.3-.8.4-1.7 0-2.5"/>'+
     '</svg>';
     if(flames<=1)return flame;
-    return'<div style="display:flex;gap:1px">'+Array(flames).fill(flame).join('')+'</div>';
+    var s=Math.round(sz*0.55);
+    var sf='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+
+      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z" fill="var(--green)" stroke="none" opacity=".7"/>'+
+      '<path d="M12 2c0 0-4 4-4 8 0 2.2 1.8 4 4 4s4-1.8 4-4c0-1-.4-2-1-2.8 0 0-1 1.8-2 2.8 0-2-1-5-1-8z"/>'+
+      '<path d="M8 14c-1.2.8-2 2-2 3.5C6 19.4 8.7 21 12 21s6-1.6 6-3.5c0-1.5-.8-2.7-2-3.5 0 1-.6 2-2 2.5.3-.8.4-1.7 0-2.5"/>'+
+    '</svg>';
+    var row2='<div style="display:flex;gap:0">'+sf+sf+'</div>';
+    if(flames===2)return'<div style="display:flex;flex-direction:column;gap:0;align-items:center">'+sf+sf+'</div>';
+    if(flames===3)return'<div style="display:flex;flex-direction:column;gap:0;align-items:center">'+'<div style="display:flex;justify-content:center">'+sf+'</div>'+row2+'</div>';
+    return'<div style="display:flex;flex-direction:column;gap:0">'+row2+row2+'</div>';
   }
   var rd=sz/2-2,c=sz/2,sw=2.5,a=2*Math.PI*Math.min(r||0,1),x=c+rd*Math.sin(a),y=c-rd*Math.cos(a),lg=r>0.5?1:0;
   var arc=r>0?'<path d="M'+c+','+(c-rd)+' A'+rd+','+rd+' 0 '+lg+' 1 '+x.toFixed(1)+','+y.toFixed(1)+'" fill="none" stroke="var(--green)" stroke-width="'+sw+'" stroke-linecap="round"/>':'';

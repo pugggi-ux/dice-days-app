@@ -1131,6 +1131,7 @@ function renderGameCard(g,inInbox,swipeKey){
   if(g.wish)tags+='<span class="tag tan">Wunsch</span>';
   if(g.interaction==='koop')tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green);font-weight:700">Koop</span>';
   else if(g.interaction==='semi')tags+='<span class="tag" style="background:rgba(212,160,23,.18);color:var(--yellow);font-weight:700">Semi-Koop</span>';
+  else if(g.interaction==='komp')tags+='<span class="tag" style="background:rgba(224,85,85,.15);color:var(--red);font-weight:700">Komp</span>';
   // right ring: interested / sweetspot (fallback: max players)
   var maxP=parseInt((g.players||'').split('-').pop())||4;
   var sweetspot=g.sweetspot||maxP;
@@ -1379,6 +1380,7 @@ function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
   if(g.complexity)tags+='<span class="tag">'+g.complexity+'</span>';
   if(g.interaction==='koop')tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green);font-weight:700">Koop</span>';
   else if(g.interaction==='semi')tags+='<span class="tag" style="background:rgba(212,160,23,.18);color:var(--yellow);font-weight:700">Semi-Koop</span>';
+  else if(g.interaction==='komp')tags+='<span class="tag" style="background:rgba(224,85,85,.15);color:var(--red);font-weight:700">Komp</span>';
   tags+=extraTags;
   var bggImg=g.bgg?g.bgg.replace(/.*boardgame\/(\d+).*/,'https://cf.geekdo-images.com/thumb/img/$1'):'';
   var imgHtml='';

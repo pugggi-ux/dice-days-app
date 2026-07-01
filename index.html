@@ -559,7 +559,7 @@ var eventPayments = {'ev1':{'p-me':false,'p2':true,'p3':false,'p4':true},'ev2':{
 var eventTrades = {
   'ev1':[
     {id:'tr1',fromId:'p-me',toId:'p2',item:'Wingspan Promo Pack',status:'packed'},
-    {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'planned'},
+    {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'packed'},
   ],
   'ev2':[]
 };
@@ -1356,8 +1356,8 @@ function renderPackliste(){
   });
   html+='<div class="inline-add"><input id="new-pack-item" placeholder="Eintrag hinzufügen…"><button class="btn btn-sm btn-primary" onclick="addPackItem()">+</button></div></div>';
   html+='<div class="sec-hdr">Handelsbörse</div>';
-  var tradeStatusLabel={planned:'Geplant',offered:'Bereit',packed:'Eingepackt',delivered:'Übergeben',done:'Abgeschlossen'};
-  var tradeStatusColor={planned:'var(--muted)',offered:'var(--yellow)',packed:'var(--green)',delivered:'var(--green)',done:'var(--muted)'};
+  var tradeStatusLabel={planned:'Einpacken ausstehend',packed:'Eingepackt',delivered:'Übergeben',done:'Abgeschlossen'};
+  var tradeStatusColor={planned:'var(--muted)',packed:'var(--yellow)',delivered:'var(--green)',done:'var(--muted)'};
   trades.forEach(function(tr){
     var fromP=participants.find(function(p){return p.id===tr.fromId;}),toP=participants.find(function(p){return p.id===tr.toId;});
     var iSend=tr.fromId===me,iReceive=tr.toId===me,iInvolved=iSend||iReceive;
@@ -1378,19 +1378,24 @@ function renderPackliste(){
       '</div>'+
       '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
     if(iSend){
-      if(st==='planned')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Bereit einzupacken</button>';
-      else if(st==='offered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Eingepackt</button>';
+      if(st==='planned')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Einpacken</button>';
       else if(st==='packed')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben</button>';
     }
-    if(iReceive&&st==='packed')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Erhalten</button>';
+    if(iReceive){
+      if(st==='delivered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Empfangen</button>';
+      else if(st!=='done')html+='<button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:var(--muted);border:none;cursor:default" disabled>Empfangen</button>';
+    }
     html+='</div></div>';
   });
-  // partner autocomplete datalist
-  var allPNames=participants.map(function(p){return'<option value="'+escHtml(p.name)+'">';}).join('');
-  html+='<datalist id="trade-partners-list">'+allPNames+'</datalist>';
-  html+='<div class="card"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Neuer Handelseintrag</div>'+
+  // partner autocomplete — include all participants + virtual participants of this event
+  var vpForEvent=virtualParticipants.filter(function(vp){return vp.eventId===currentEventId();});
+  var allPartnerNames=participants.map(function(p){return p.name;}).concat(vpForEvent.map(function(vp){return vp.name;}));
+  var datalistOpts=allPartnerNames.map(function(n){return'<option value="'+escHtml(n)+'">';}).join('');
+  html+='<datalist id="trade-partners-list">'+datalistOpts+'</datalist>';
+  html+='<div class="card">'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Neuer Handelseintrag</div>'+
     '<input id="new-trade-item" placeholder="Gegenstand…" style="margin-bottom:6px">'+
-    '<input id="new-trade-partner" placeholder="Partner (Name)…" list="trade-partners-list" style="margin-bottom:8px">'+
+    '<input id="new-trade-partner" placeholder="Partner (Name)…" list="trade-partners-list" style="margin-bottom:8px" autocomplete="off">'+
     '<button class="btn btn-sm btn-primary" style="width:100%" onclick="addTrade()">Eintrag hinzufügen</button></div>';
   el.innerHTML=html;
 }
@@ -1430,10 +1435,9 @@ function advanceTrade(id){
   var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(!tr)return;
   var me=ME(),iSend=tr.fromId===me,iReceive=tr.toId===me;
   var st=tr.status||'planned';
-  if(st==='planned'&&iSend)tr.status='offered';
-  else if(st==='offered'&&iSend)tr.status='packed';
-  else if(st==='packed'&&(iSend||iReceive))tr.status='delivered';
-  else if(st==='delivered'&&(iSend||iReceive))tr.status='done';
+  if(st==='planned'&&iSend)tr.status='packed';
+  else if(st==='packed'&&iSend)tr.status='delivered';
+  else if(st==='delivered'&&iReceive)tr.status='done';
   renderPackliste();
 }
 function swapTrade(id){

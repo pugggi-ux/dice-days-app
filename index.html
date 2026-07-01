@@ -340,7 +340,8 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="tab" id="tab-btn-wish" onclick="switchListTab('wish')">Wunschliste <span id="tab-count-wish" style="opacity:.6;font-size:11px"></span></button>
   </div>
   <div class="sort-bar">
-    <button class="icon-btn" id="sort-btn" onclick="toggleSortMenu()" title="Sortierung" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid #444;background:var(--card);color:var(--text);font-size:12px;font-weight:600;white-space:nowrap"></button>
+    <div style="flex:1"></div>
+    <button id="sort-btn" onclick="toggleSortMenu()" title="Sortierung" style="display:flex;align-items:center;padding:4px 8px;border-radius:8px;border:1px solid #444;background:var(--card);color:var(--text);cursor:pointer;line-height:1"></button>
     <div id="sort-menu" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4)" onclick="if(event.target===this)closeSortMenu()">
       <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:16px;padding:8px;min-width:230px;box-shadow:0 8px 32px rgba(0,0,0,.6)">
       </div>
@@ -1091,7 +1092,7 @@ function sortIcon(v,sz){
 }
 function updateSortBtn(){
   var btn=document.getElementById('sort-btn');if(!btn)return;
-  btn.innerHTML=sortIcon(currentSort,32);
+  btn.innerHTML=sortIcon(currentSort,26);
 }
 function toggleSortMenu(){
   var menu=document.getElementById('sort-menu');if(!menu)return;

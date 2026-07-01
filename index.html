@@ -768,7 +768,7 @@ function renderGameCard(g,inInbox,swipeKey){
   if(g.complexity)tags+='<span class="tag">'+ic('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',10)+' '+g.complexity+'</span>';
   if(g.players)tags+='<span class="tag">'+ic('<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',10)+' '+g.players+'</span>';
   if(g.duration)tags+='<span class="tag">'+ic('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',10)+' '+g.duration+'min</span>';
-  if(amInt)tags+='<span class="tag tan">'+ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/>',10)+' Interesse</span>';
+  if(amInt&&!amExp)tags+='<span class="tag" style="background:rgba(90,158,111,.2);color:var(--green)">'+ic('<circle cx="12" cy="12" r="9"/>',10)+' Interesse</span>';
   if(amExp)tags+='<span class="tag yellow">'+ic('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',10)+' Erklärer</span>';
   if(g.ignored)tags+='<span class="tag" style="opacity:.5">ausgeblendet</span>';
   var nameLink=g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>':escHtml(g.name);
@@ -786,17 +786,19 @@ function renderGameCard(g,inInbox,swipeKey){
   }
   var infoHtml='';
   if(g.explainers.length){var exN=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});infoHtml+='<div style="font-size:11px;color:var(--yellow);margin-top:4px">Erklärer: '+exN.join(', ')+'</div>';}
-  else if(me&&!g.wish){infoHtml+='<div style="font-size:11px;color:var(--muted);margin-top:4px">Kein Erklärer</div>';}
+  else if(me&&!g.wish){infoHtml+='<div style="font-size:11px;color:var(--red);margin-top:4px">Kein Erklärer registriert</div>';}
   if(g.suppliers.length){var supN=g.suppliers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});infoHtml+='<div style="font-size:11px;color:var(--muted);margin-top:2px">Mitbringer: '+supN.join(', ')+'</div>';}
+  var accentColor=amExp?'var(--yellow)':amInt?'var(--green)':'';
+  var accentStyle=accentColor?'border-left:3px solid '+accentColor+';':'border-left:3px solid transparent;';
   var cardInner='<div class="game-card-inner"><div style="font-size:14px;font-weight:600">'+nameLink+'</div><div class="game-tags">'+tags+'</div>'+infoHtml+btnHtml+'</div>';
   if(controlMode==='swipe'&&swipeKey){
     return'<div class="swipe-wrap" style="margin-bottom:10px">'+
       '<div class="wagon wagon-hide">Ignorieren</div>'+
       '<div class="wagon wagon-interest" id="wi-'+swipeKey+'">Interesse</div>'+
       '<div class="wagon wagon-explain" id="we-'+swipeKey+'">Erklärer</div>'+
-      '<div class="game-card" id="sc-'+swipeKey+'">'+cardInner+'</div></div>';
+      '<div class="game-card" id="sc-'+swipeKey+'" style="'+accentStyle+'">'+cardInner+'</div></div>';
   }
-  return'<div class="game-card" data-id="'+g.id+'">'+cardInner+'</div>';
+  return'<div class="game-card" data-id="'+g.id+'" style="'+accentStyle+'">'+cardInner+'</div>';
 }
 
 // ============================================================
@@ -838,17 +840,43 @@ function renderInbox(){
 // ============================================================
 // MITSPIELEN & ERKLÄREN
 // ============================================================
+function statusCard(g,rightIcon,rightColor,extraTags,extraBtns,participants,me){
+  var others=g.interested.filter(function(pid){return pid!==me;}).map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?escHtml(p.name):pid;});
+  var tags='';
+  if(g.players)tags+='<span class="tag">'+g.players+' Sp.</span>';
+  if(g.duration)tags+='<span class="tag">'+g.duration+' Min</span>';
+  if(g.complexity)tags+='<span class="tag">'+g.complexity+'</span>';
+  tags+=extraTags;
+  var bggImg=g.bgg?g.bgg.replace(/.*boardgame\/(\d+).*/,'https://cf.geekdo-images.com/thumb/img/$1'):'';
+  var imgHtml='';
+  return'<div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px">'+
+    (imgHtml)+
+    '<div style="flex:1;min-width:0">'+
+      '<div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(g.bgg?'<a href="'+g.bgg+'" target="_blank" style="color:var(--text);text-decoration:none">'+escHtml(g.name)+'</a>':escHtml(g.name))+'</div>'+
+      (others.length?'<div style="font-size:11px;color:var(--muted);margin-top:2px">mit '+others.join(', ')+'</div>':'')+
+      '<div class="game-tags" style="margin-top:5px">'+tags+'</div>'+
+      (extraBtns?'<div class="btn-row">'+extraBtns+'</div>':'')+
+    '</div>'+
+    '<div style="color:'+rightColor+';flex-shrink:0;display:flex;align-items:center">'+rightIcon+'</div>'+
+  '</div>';
+}
 function renderMit(){
   var el=document.getElementById('mit-list');if(!el)return;
   var plan=getTimePlan(),me=ME(),participants=currentParticipants();
   if(!plan.mitGames.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Keine Spiele zum Mitspielen</div>';return;}
   el.innerHTML=plan.mitGames.map(function(g){
-    var names=g.interested.filter(function(pid){return pid!==me;}).map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
-    var expNames=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
-    return'<div class="card"><div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px">'+(g.duration?g.duration+' min':'')+( names.length?' · mit '+names.join(', '):'')+'</div>'+
-      (expNames.length?'<div style="font-size:11px;color:var(--yellow);margin-top:3px">Erklärer: '+expNames.join(', ')+'</div>':'')+
-    '</div>';
+    var amExp=me&&g.explainers.indexOf(me)>=0;
+    var hasExp=g.explainers.length>0;
+    var expNames=g.explainers.map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?escHtml(p.name):pid;});
+    var extraTags='';
+    if(amExp)extraTags+='<span class="tag yellow">Du erklärst</span>';
+    else if(!hasExp)extraTags+='<span class="tag" style="background:rgba(212,160,23,.15);color:var(--yellow)">? Erklärbedarf</span>';
+    else extraTags+='<span class="tag" style="background:rgba(90,158,111,.15);color:var(--green)">'+escHtml(expNames[0])+' erklärt</span>';
+    var rightIcon=amExp
+      ? ic('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',22)
+      : ic('<circle cx="12" cy="12" r="9"/><polyline points="12 8 12 12 14 14"/>',22);
+    var rightColor=amExp?'var(--yellow)':'var(--green)';
+    return statusCard(g,rightIcon,rightColor,extraTags,'',participants,me);
   }).join('');
 }
 function renderErk(){
@@ -856,11 +884,12 @@ function renderErk(){
   var plan=getTimePlan(),me=ME(),participants=currentParticipants();
   if(!plan.erkGames.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px">Du erklärst aktuell keine Spiele</div>';return;}
   el.innerHTML=plan.erkGames.map(function(g){
-    var names=g.interested.filter(function(pid){return pid!==me;}).map(function(pid){var p=participants.find(function(x){return x.id===pid;});return p?p.name:pid;});
-    return'<div class="card"><div style="font-size:14px;font-weight:600">'+escHtml(g.name)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px">'+(g.erkTime||g.duration||0)+' min'+(names.length?' · für '+names.join(', '):'')+'</div>'+
-      '<div class="btn-row"><button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">Austragen</button></div>'+
-    '</div>';
+    var listeners=g.interested.filter(function(pid){return pid!==me;});
+    var extraTags='<span class="tag yellow">Du erklärst</span>';
+    if(listeners.length)extraTags+='<span class="tag" style="background:rgba(184,160,130,.15);color:var(--tan)">'+listeners.length+' Mitspieler</span>';
+    var rightIcon=ic('<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',22);
+    var extraBtns='<button class="btn btn-sm btn-ghost" onclick="removeExplainer(\''+g.id+'\')">Austragen</button>';
+    return statusCard(g,rightIcon,'var(--yellow)',extraTags,extraBtns,participants,me);
   }).join('');
 }
 

@@ -1225,17 +1225,15 @@ function renderGameCard(g,inInbox,swipeKey){
     var undoFulfill='function(){var g=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g){g.wish=true;var i=g.explainers.indexOf(\''+me+'\');if(i>=0)g.explainers.splice(i,1);i=g.suppliers.indexOf(\''+me+'\');if(i>=0)g.suppliers.splice(i,1);renderAll();}}';
     var wbBg=inColl?'rgba(90,158,111,.18)':'rgba(255,255,255,.06)';
     var wbColor=inColl?'var(--green)':'var(--muted)';
-    var btnsHtml='';
-    if(needsExp&&needsSup){
-      btnsHtml+='<button class="btn btn-sm" style="flex:1;background:'+wbBg+';color:'+wbColor+';border:1px solid rgba(255,255,255,.1);font-weight:600" onclick="fulfillWish(\''+g.id+'\');showToast(\'Wunsch erfüllt!\','+undoFulfill+')">Ich erfülle komplett</button>';
-    }
-    if(needsExp){
-      btnsHtml+='<button class="btn btn-sm" style="flex:1;background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.1);font-weight:600" onclick="addExplainer(\''+g.id+'\');var g2=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g2){g2.wish=false;}renderAll();showToast(\'Erklärer eingetragen\',function(){removeExplainer(\''+g.id+'\');renderAll();})">Ich erkläre</button>';
-    }
-    if(needsSup){
-      btnsHtml+='<button class="btn btn-sm" style="flex:1;background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.1);font-weight:600" onclick="var g2=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g2){g2.wish=false;if(g2.suppliers.indexOf(\''+me+'\')<0)g2.suppliers.push(\''+me+'\');if(g2.interested.indexOf(\''+me+'\')<0)g2.interested.push(\''+me+'\');}renderAll();showToast(\'Lieferant eingetragen\',function(){var g3=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g3){var i=g3.suppliers.indexOf(\''+me+'\');if(i>=0)g3.suppliers.splice(i,1);renderAll();}})">Ich bringe mit</button>';
-    }
-    wishBtn=btnsHtml?'<div style="padding:0 14px 10px;display:flex;gap:6px" onclick="event.stopPropagation()">'+btnsHtml+'</div>':'';
+    var vis0=needsExp&&needsSup?'':'visibility:hidden;pointer-events:none;';
+    var vis1=needsExp?'':'visibility:hidden;pointer-events:none;';
+    var vis2=needsSup?'':'visibility:hidden;pointer-events:none;';
+    var btnStyle='flex:1;border:1px solid rgba(255,255,255,.1);font-weight:600;font-size:12px;';
+    var btnsHtml=
+      '<button class="btn btn-sm" style="'+btnStyle+'background:'+wbBg+';color:'+wbColor+';'+vis0+'" onclick="fulfillWish(\''+g.id+'\');showToast(\'Wunsch erfüllt!\','+undoFulfill+')">Ich erfülle komplett</button>'+
+      '<button class="btn btn-sm" style="'+btnStyle+'background:rgba(255,255,255,.06);color:var(--text);'+vis1+'" onclick="addExplainer(\''+g.id+'\');var g2=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g2){g2.wish=false;}renderAll();showToast(\'Erklärer eingetragen\',function(){removeExplainer(\''+g.id+'\');renderAll();})">Ich erkläre</button>'+
+      '<button class="btn btn-sm" style="'+btnStyle+'background:rgba(255,255,255,.06);color:var(--text);'+vis2+'" onclick="var g2=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g2){g2.wish=false;if(g2.suppliers.indexOf(\''+me+'\')<0)g2.suppliers.push(\''+me+'\');if(g2.interested.indexOf(\''+me+'\')<0)g2.interested.push(\''+me+'\');}renderAll();showToast(\'Lieferant eingetragen\',function(){var g3=currentGames().find(function(x){return x.id===\''+g.id+'\';});if(g3){var i=g3.suppliers.indexOf(\''+me+'\');if(i>=0)g3.suppliers.splice(i,1);renderAll();}})">Ich bringe mit</button>';
+    wishBtn='<div style="padding:0 14px 10px;display:flex;gap:6px" onclick="event.stopPropagation()">'+btnsHtml+'</div>';
   }
   var cardInner=
     '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">'+

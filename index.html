@@ -28,7 +28,7 @@ body.light{background:#ccc}
 input,select,textarea{background:#333;border:1px solid #444;color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--tan)}
 label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-top:10px}
-.bottom-nav{display:flex;background:var(--surface);border-top:1px solid #333;flex-shrink:0}
+.bottom-nav{display:flex;background:var(--surface);border-bottom:1px solid #333;flex-shrink:0}
 /* Game card rich layout */
 .game-card-cover{width:64px;min-height:72px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--surface)}
 .game-card-cover-ph{width:64px;min-height:72px;border-radius:8px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
@@ -73,9 +73,9 @@ label{color:var(--muted);font-size:12px;display:block;margin-bottom:4px;margin-t
 .detail-img{width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--surface)}
 .detail-img-ph{width:80px;height:80px;border-radius:10px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .participant-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;gap:3px;position:relative}
+.nav-btn{flex:1;display:flex;flex-direction:row;align-items:center;justify-content:center;padding:9px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;gap:4px;position:relative;white-space:nowrap}
 .nav-btn svg{opacity:.6}
-.nav-btn.active{color:var(--tan)}
+.nav-btn.active{color:var(--tan);border-bottom-color:var(--tan)}
 .nav-btn.active svg{opacity:1;stroke:var(--tan)}
 .nav-dot{position:absolute;top:6px;right:calc(50% - 14px);width:6px;height:6px;background:var(--red);border-radius:50%}
 /* Tabs */
@@ -308,12 +308,20 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 
 <!-- SCREEN: SPIELE -->
 <div class="screen" id="screen-list">
-  <div class="app-bar">
+  <div class="app-bar" id="appbar-list">
     <button class="app-bar-title" id="event-title-btn" onclick="toggleEventDropdown()">Dice Days</button>
     <span id="event-code-badge" style="font-size:11px;font-weight:700;background:var(--card);border:1px solid #444;border-radius:6px;padding:3px 8px;color:var(--muted);letter-spacing:1px"></span>
     <button class="icon-btn" onclick="showAddGame()" title="Spiel hinzufügen" style="color:var(--tan);font-size:18px;font-weight:300">+</button>
     <button class="avatar-btn" id="avatar-list" onclick="openAvatarMenu(event)">DE</button>
     <div class="event-dropdown" id="event-dropdown"></div>
+  </div>
+  <div class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
+    <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')"><span id="ni-inbox"></span>Inbox<span class="nav-dot" id="inbox-dot" style="display:none"></span></button>
+    <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')"><span id="ni-mit"></span>Mitspielen</button>
+    <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')"><span id="ni-erk"></span>Erklären</button>
+    <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')"><span id="ni-pack"></span>Packliste</button>
+    <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')"><span id="ni-buffet"></span>Buffet</button>
   </div>
   <div id="msg-banner-list" style="padding:8px 12px 0"></div>
   <div class="paypal-banner" id="paypal-banner" style="display:none;margin:8px 12px 0">
@@ -418,15 +426,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
   <div class="action-bar" id="detail-actions"></div>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav" id="bottom-nav">
-  <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
-  <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')"><span id="ni-inbox"></span>Inbox<span class="nav-dot" id="inbox-dot" style="display:none"></span></button>
-  <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')"><span id="ni-mit"></span>Mitspielen</button>
-  <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')"><span id="ni-erk"></span>Erklären</button>
-  <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')"><span id="ni-pack"></span>Packliste</button>
-  <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')"><span id="ni-buffet"></span>Buffet</button>
-</div>
 
 </div>
 <script>
@@ -552,8 +551,8 @@ var eventPackItems = {
 var eventPayments = {'ev1':{'p-me':false,'p2':true,'p3':false,'p4':true},'ev2':{}};
 var eventTrades = {
   'ev1':[
-    {id:'tr1',fromId:'p-me',toId:'p2',item:'Wingspan Promo Pack',status:'packed',fromPacked:true,toPacked:false},
-    {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'offered',fromPacked:false,toPacked:false},
+    {id:'tr1',fromId:'p-me',toId:'p2',item:'Wingspan Promo Pack',status:'packed'},
+    {id:'tr2',fromId:'p3',toId:'p-me',item:'Bierdeckel-Spielsteine',status:'planned'},
   ],
   'ev2':[]
 };
@@ -635,7 +634,17 @@ function showScreen(name){
   var s=document.getElementById('screen-'+name);if(s)s.classList.add('active');
   var nb=document.getElementById('nav-'+name);if(nb)nb.classList.add('active');
   var nav=document.getElementById('bottom-nav');
-  if(nav)nav.style.display=(name==='admin'||name==='detail')?'none':'flex';
+  if(nav){
+    if(name==='admin'||name==='detail'){
+      nav.style.display='none';
+    } else {
+      nav.style.display='flex';
+      var appBar=s&&s.querySelector('.app-bar');
+      if(appBar&&nav.previousElementSibling!==appBar){
+        appBar.insertAdjacentElement('afterend',nav);
+      }
+    }
+  }
   if(name==='list'){renderGameList();renderBanners();renderPaypalBanner();renderPolls();updateEventTitle();}
   if(name==='inbox'){renderInbox();renderUnifiedTimeBar('inbox-timebar');}
   if(name==='mit'){renderMit();renderUnifiedTimeBar('mit-timebar');}
@@ -1297,34 +1306,41 @@ function renderPackliste(){
   });
   html+='<div class="inline-add"><input id="new-pack-item" placeholder="Eintrag hinzufügen…"><button class="btn btn-sm btn-primary" onclick="addPackItem()">+</button></div></div>';
   html+='<div class="sec-hdr">Handelsbörse</div>';
+  var tradeStatusLabel={planned:'Geplant',offered:'Bereit',packed:'Eingepackt',delivered:'Übergeben',done:'Abgeschlossen'};
+  var tradeStatusColor={planned:'var(--muted)',offered:'var(--yellow)',packed:'var(--green)',delivered:'var(--green)',done:'var(--muted)'};
   trades.forEach(function(tr){
     var fromP=participants.find(function(p){return p.id===tr.fromId;}),toP=participants.find(function(p){return p.id===tr.toId;});
-    var iSend=tr.fromId===me,iReceive=tr.toId===me;
-    html+='<div class="card">'+
+    var iSend=tr.fromId===me,iReceive=tr.toId===me,iInvolved=iSend||iReceive;
+    var fromName=fromP?fromP.name:(tr.fromId||'?'),toName=toP?toP.name:(tr.toId||'?');
+    var fromColor=fromP?fromP.color:'var(--muted)',toColor=toP?toP.color:'var(--muted)';
+    var st=tr.status||'planned';
+    html+='<div class="card" style="'+(iInvolved?'':'opacity:.6')+'">'+
       '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'+
         '<span style="font-size:13px;font-weight:600;flex:1">'+escHtml(tr.item)+'</span>'+
-        '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #444" onclick="editTradeItem(\''+tr.id+'\')">Bearbeiten</button>'+
-        '<button style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:2px 6px" onclick="removeTrade(\''+tr.id+'\')">'+ic('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',12)+'</button>'+
+        '<span style="font-size:11px;font-weight:600;color:'+(tradeStatusColor[st]||'var(--muted)')+'">'+escHtml(tradeStatusLabel[st]||st)+'</span>'+
+        (iInvolved?'<button style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 4px" onclick="editTradeItem(\''+tr.id+'\')">'+ic('<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',13)+'</button>':'')+
+        (iSend?'<button style="background:none;border:none;color:var(--red);cursor:pointer;padding:2px 4px" onclick="removeTrade(\''+tr.id+'\')">'+ic('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',13)+'</button>':'')+
       '</div>'+
       '<div class="trade-direction">'+
-        '<span style="color:'+(fromP?fromP.color:'var(--muted)')+'">'+escHtml(fromP?fromP.name:tr.fromId)+'</span>'+
-        '<span class="trade-arrow">'+ic('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',14)+'</span>'+
-        '<span style="color:'+(toP?toP.color:'var(--muted)')+'">'+escHtml(toP?toP.name:tr.toId)+'</span>'+
-        '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #444;margin-left:4px" onclick="editTradePartner(\''+tr.id+'\')">&#9998;</button>'+
-      '</div>';
+        '<span style="color:'+fromColor+'">'+escHtml(fromName)+'</span>'+
+        '<button class="trade-arrow" onclick="swapTrade(\''+tr.id+'\')" style="background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;border:1px solid #444" title="Richtung tauschen">'+ic('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',14)+'</button>'+
+        '<span style="color:'+toColor+'">'+escHtml(toName)+'</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
     if(iSend){
-      if(tr.status==='offered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Eingepackt</button>';
-      else if(tr.status==='packed')html+='<div style="font-size:12px;color:var(--green);margin-bottom:4px">Eingepackt</div><button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben</button>';
-      else html+='<div style="font-size:12px;color:var(--green)">Abgeschlossen</div>';
-    }else if(iReceive){
-      html+=(tr.fromPacked?'<div style="font-size:12px;color:var(--green)">Sender hat eingepackt</div>':'<div style="font-size:12px;color:var(--muted)">Noch nicht eingepackt</div>');
-      if(tr.status==='delivered')html+='<button class="btn btn-sm btn-primary" style="margin-top:4px" onclick="advanceTrade(\''+tr.id+'\')">Erhalten</button>';
+      if(st==='planned')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Bereit einzupacken</button>';
+      else if(st==='offered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Eingepackt</button>';
+      else if(st==='packed')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben</button>';
     }
-    html+='</div>';
+    if(iReceive&&st==='packed')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Erhalten</button>';
+    html+='</div></div>';
   });
+  // partner autocomplete datalist
+  var allPNames=participants.map(function(p){return'<option value="'+escHtml(p.name)+'">';}).join('');
+  html+='<datalist id="trade-partners-list">'+allPNames+'</datalist>';
   html+='<div class="card"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Neuer Handelseintrag</div>'+
     '<input id="new-trade-item" placeholder="Gegenstand…" style="margin-bottom:6px">'+
-    '<input id="new-trade-partner" placeholder="Partner (Name)…" style="margin-bottom:8px">'+
+    '<input id="new-trade-partner" placeholder="Partner (Name)…" list="trade-partners-list" style="margin-bottom:8px">'+
     '<button class="btn btn-sm btn-primary" style="width:100%" onclick="addTrade()">Eintrag hinzufügen</button></div>';
   el.innerHTML=html;
 }
@@ -1360,7 +1376,21 @@ function togglePackItem(id,cb){var evId=currentEventId();var item=(eventPackItem
 function toggleGenericPack(i,cb){var row=document.getElementById('gpack-'+i);if(row)row.className='pack-item'+(cb.checked?' done':'');}
 function addPackItem(){var inp=document.getElementById('new-pack-item');if(!inp)return;var text=inp.value.trim();if(!text)return;var evId=currentEventId(),me=ME();if(!evId||!me)return;if(!eventPackItems[evId])eventPackItems[evId]=[];eventPackItems[evId].push({id:'pk'+Date.now(),participantId:me,text:text,type:'personal',checked:false});inp.value='';renderPackliste();}
 function removePackItem(id){var evId=currentEventId();if(!eventPackItems[evId])return;eventPackItems[evId]=eventPackItems[evId].filter(function(x){return x.id!==id;});renderPackliste();}
-function advanceTrade(id){var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(!tr)return;if(tr.status==='offered'){tr.status='packed';tr.fromPacked=true;}else if(tr.status==='packed'){tr.status='delivered';}else if(tr.status==='delivered'){tr.status='done';tr.toPacked=true;}renderPackliste();}
+function advanceTrade(id){
+  var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(!tr)return;
+  var me=ME(),iSend=tr.fromId===me,iReceive=tr.toId===me;
+  var st=tr.status||'planned';
+  if(st==='planned'&&iSend)tr.status='offered';
+  else if(st==='offered'&&iSend)tr.status='packed';
+  else if(st==='packed'&&(iSend||iReceive))tr.status='delivered';
+  else if(st==='delivered'&&(iSend||iReceive))tr.status='done';
+  renderPackliste();
+}
+function swapTrade(id){
+  var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(!tr)return;
+  var tmp=tr.fromId;tr.fromId=tr.toId;tr.toId=tmp;
+  renderPackliste();
+}
 function editTradePartner(id){var n=prompt('Partner-Name:');if(!n)return;var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(!tr)return;var me=ME(),p=currentParticipants().find(function(x){return x.name.toLowerCase()===n.toLowerCase();});if(tr.fromId===me)tr.toId=p?p.id:n;else tr.fromId=p?p.id:n;renderPackliste();}
 function editTradeItem(id){var n=prompt('Gegenstand:');if(!n)return;var evId=currentEventId(),tr=(eventTrades[evId]||[]).find(function(x){return x.id===id;});if(tr){tr.item=n;renderPackliste();}}
 function removeTrade(id){var evId=currentEventId();if(!eventTrades[evId])return;eventTrades[evId]=eventTrades[evId].filter(function(x){return x.id!==id;});renderPackliste();}
@@ -1372,7 +1402,7 @@ function addTrade(){
   var evId=currentEventId(),me=ME();if(!evId||!me)return;
   var p=currentParticipants().find(function(x){return x.name.toLowerCase()===partnerName.toLowerCase();});
   if(!eventTrades[evId])eventTrades[evId]=[];
-  eventTrades[evId].push({id:'tr'+Date.now(),fromId:me,toId:p?p.id:partnerName,item:item,status:'offered',fromPacked:false,toPacked:false});
+  eventTrades[evId].push({id:'tr'+Date.now(),fromId:me,toId:p?p.id:partnerName,item:item,status:'planned'});
   renderPackliste();
 }
 

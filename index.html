@@ -840,19 +840,24 @@ function toggleDarkMode(on){
 // ============================================================
 var ACCENT_COLORS=[
   {hex:'#B8A082',label:'Sand (Standard)'},
-  {hex:'#7B9E87',label:'Salbei'},
-  {hex:'#9E7B8A',label:'Mauve'},
-  {hex:'#7B8E9E',label:'Stahlblau'},
+  {hex:'#e8c547',label:'Gelb'},
+  {hex:'#f4913a',label:'Orange'},
+  {hex:'#e05555',label:'Rot'},
+  {hex:'#e040a0',label:'Pink'},
+  {hex:'#a855f7',label:'Violett'},
+  {hex:'#3b82f6',label:'Blau'},
+  {hex:'#06b6d4',label:'Cyan'},
+  {hex:'#10b981',label:'Grün'},
+  {hex:'#84cc16',label:'Limette'},
   {hex:'#c0845a',label:'Terracotta'},
-  {hex:'#a0b060',label:'Olive'},
-  {hex:'#8a70c0',label:'Lavendel'},
-  {hex:'#c07070',label:'Rose'},
+  {hex:'#7B9E87',label:'Salbei'},
 ];
 var DEFAULT_ACCENT='#B8A082';
 var currentAccent=DEFAULT_ACCENT;
 function setAccentColor(hex){
   currentAccent=hex;
   document.documentElement.style.setProperty('--tan',hex);
+  document.querySelectorAll('.avatar-btn').forEach(function(btn){btn.style.borderColor=hex;btn.style.color=hex;});
   renderColorSwatches();
   updateSortBtn();
   renderAll();

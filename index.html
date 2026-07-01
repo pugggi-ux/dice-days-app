@@ -141,29 +141,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
 <body>
 <div id="app">
 
-<!-- TOP NAV -->
-<div class="bottom-nav" id="bottom-nav">
-  <button class="nav-btn active" id="nav-list" onclick="showScreen('list')">
-    <span id="ni-list"></span>Spiele
-  </button>
-  <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')">
-    <span id="ni-inbox"></span>Inbox
-    <span class="nav-dot" id="inbox-dot" style="display:none"></span>
-  </button>
-  <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')">
-    <span id="ni-mit"></span>Mitspielen
-  </button>
-  <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')">
-    <span id="ni-erk"></span>Erklären
-  </button>
-  <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')">
-    <span id="ni-pack"></span>Packliste
-  </button>
-  <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')">
-    <span id="ni-buffet"></span>Buffet
-  </button>
-</div>
-
 <!-- JOIN SCREEN -->
 <div class="join-screen" id="join-screen" style="display:none">
   <h2>Willkommen</h2>
@@ -243,6 +220,14 @@ input:checked + .toggle-slider:before{transform:translateX(20px);background:#fff
     <button class="icon-btn" onclick="showScreen('admin')" title="Einstellungen" id="settings-list"></button>
     <button class="avatar-btn" id="avatar-list" onclick="openUserOverlay()">DE</button>
     <div class="event-dropdown" id="event-dropdown"></div>
+  </div>
+  <div class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" id="nav-list" onclick="showScreen('list')"><span id="ni-list"></span>Spiele</button>
+    <button class="nav-btn" id="nav-inbox" onclick="showScreen('inbox')"><span id="ni-inbox"></span>Inbox<span class="nav-dot" id="inbox-dot" style="display:none"></span></button>
+    <button class="nav-btn" id="nav-mit" onclick="showScreen('mit')"><span id="ni-mit"></span>Mitspielen</button>
+    <button class="nav-btn" id="nav-erk" onclick="showScreen('erk')"><span id="ni-erk"></span>Erklären</button>
+    <button class="nav-btn" id="nav-pack" onclick="showScreen('pack')"><span id="ni-pack"></span>Packliste</button>
+    <button class="nav-btn" id="nav-buffet" onclick="showScreen('buffet')"><span id="ni-buffet"></span>Buffet</button>
   </div>
   <div id="msg-banner-list" style="padding:8px 12px 0"></div>
   <div class="paypal-banner" id="paypal-banner" style="display:none;margin:8px 12px 0">
@@ -530,7 +515,11 @@ function showScreen(name){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var s=document.getElementById('screen-'+name);if(s)s.classList.add('active');
   var nb=document.getElementById('nav-'+name);if(nb)nb.classList.add('active');
-  document.getElementById('bottom-nav').style.display=(name==='admin')?'none':'flex';
+  var nav=document.getElementById('bottom-nav');
+  if(name==='admin'){nav.style.display='none';}else{
+    nav.style.display='flex';
+    if(s){var ab=s.querySelector('.app-bar');if(ab)s.insertBefore(nav,ab.nextSibling);}
+  }
   if(name==='list'){renderGameList();renderBanners();renderPaypalBanner();renderPolls();updateEventTitle();}
   if(name==='inbox'){renderInbox();renderUnifiedTimeBar('inbox-timebar');}
   if(name==='mit'){renderMit();renderUnifiedTimeBar('mit-timebar');}

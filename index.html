@@ -985,7 +985,7 @@ function votePoll(id,idx){var p=polls.find(function(x){return x.id===id;});if(!p
 // ============================================================
 // SWIPE ENGINE
 // ============================================================
-var SNAP=70,FLY=160,WW=90,touchState={};
+var SNAP=120,FLY=200,WW=90,touchState={};
 function gTX(el){var m=el.style.transform.match(/translateX\(([^)]+)\)/);return m?parseFloat(m[1]):0;}
 function swS(e,k,c){if(snappedCardId&&snappedCardId!==k)unsnap(snappedCardId);var t=e.touches[0];touchState[k]={sX:t.clientX,sY:t.clientY,oX:gTX(c),moved:false};c.style.transition='none';}
 function swM(e,k,c,wi,we){var ts=touchState[k];if(!ts)return;var t=e.touches[0],dx=t.clientX-ts.sX,dy=t.clientY-ts.sY;if(!ts.moved&&Math.abs(dy)>Math.abs(dx))return;ts.moved=true;e.preventDefault();var tx=ts.oX+dx;c.style.transform='translateX('+tx+'px)';var wh=c.parentElement&&c.parentElement.querySelector('.wagon-hide');if(wh)wh.style.visibility=tx>0?'hidden':'visible';if(tx>0){var iw=Math.min(tx,WW);wi.style.width=iw+'px';wi.style.padding=iw>20?'0 12px':'0';if(tx>WW){var ew=Math.min(tx-WW,WW);we.style.width=ew+'px';we.style.padding=ew>20?'0 12px':'0';we.style.left=iw+'px';}else{we.style.width='0';we.style.padding='0';}}else{wi.style.width='0';wi.style.padding='0';we.style.width='0';we.style.padding='0';}}

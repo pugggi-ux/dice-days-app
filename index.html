@@ -1654,7 +1654,7 @@ function renderPackliste(){
       else if(st==='packed')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Übergeben</button>';
     }
     if(iReceive){
-      if(st==='delivered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Empfangen</button>';
+      if(st==='packed'||st==='delivered')html+='<button class="btn btn-sm btn-primary" onclick="advanceTrade(\''+tr.id+'\')">Empfangen</button>';
       else if(st!=='done')html+='<button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:var(--muted);border:none;cursor:default" disabled>Empfangen</button>';
     }
     html+='</div></div>';
@@ -1709,6 +1709,7 @@ function advanceTrade(id){
   var st=tr.status||'planned';
   if(st==='planned'&&iSend)tr.status='packed';
   else if(st==='packed'&&iSend)tr.status='delivered';
+  else if(st==='packed'&&iReceive)tr.status='done';
   else if(st==='delivered'&&iReceive)tr.status='done';
   renderPackliste();
 }

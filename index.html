@@ -1098,8 +1098,8 @@ function gameName(g){return g.nameDe||g.name;}
 function renderGameCard(g,inInbox,swipeKey){
   var me=ME(),amInt=me&&g.interested.indexOf(me)>=0,amExp=me&&g.explainers.indexOf(me)>=0;
   var participants=currentParticipants();
-  var noExp=!g.explainers.length&&!g.wish;
-  var noSup=!g.suppliers.length&&!g.wish;
+  var noExp=!g.explainers.length;
+  var noSup=!g.suppliers.length;
   // warning line
   var warnings=[];
   if(noExp)warnings.push('<span style="color:var(--red);font-size:12px;font-weight:600">Kein Erklärer</span>');
@@ -1194,7 +1194,7 @@ function toggleInterest(gid){var me=ME();if(!me)return;var g=currentGames().find
 function ignoreGame(gid){var g=currentGames().find(function(x){return x.id===gid;});if(g)g.ignored=true;renderAll();}
 function addExplainer(gid){var me=ME();if(!me)return;var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;if(g.explainers.indexOf(me)<0)g.explainers.push(me);if(g.interested.indexOf(me)<0)g.interested.push(me);renderAll();}
 function removeExplainer(gid){var me=ME();if(!me)return;var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;var i=g.explainers.indexOf(me);if(i>=0)g.explainers.splice(i,1);renderAll();}
-function fulfillWish(gid){var me=ME();if(!me)return;var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;g.wish=false;if(g.explainers.indexOf(me)<0)g.explainers.push(me);if(g.suppliers.indexOf(me)<0)g.suppliers.push(me);if(g.interested.indexOf(me)<0)g.interested.push(me);renderAll();}
+function fulfillWish(gid){var me=ME();if(!me)return;var g=currentGames().find(function(x){return x.id===gid;});if(!g)return;g.wish=false;if(!g.explainers.length&&g.explainers.indexOf(me)<0)g.explainers.push(me);if(!g.suppliers.length&&g.suppliers.indexOf(me)<0)g.suppliers.push(me);if(g.interested.indexOf(me)<0)g.interested.push(me);renderAll();}
 function showAddGame(){showOverlay('add-game-overlay');}
 function addGame(){
   var name=document.getElementById('ag-name').value.trim();if(!name){alert('Name erforderlich');return;}
